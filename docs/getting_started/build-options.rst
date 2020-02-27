@@ -340,6 +340,11 @@ Common build options
    translation library (xlat tables v2) must be used; version 1 of translation
    library is not supported.
 
+-  ``INVERTED_MEMMAP``: memmap tool print by default lower addresses at the
+   bottom, higher addresses at the top. This buid flag can be set to '1' to
+   invert this behavior. Lower addresses will be printed at the top and higher
+   addresses at the bottom.
+
 -  ``JUNO_AARCH32_EL3_RUNTIME``: This build flag enables you to execute EL3
    runtime software in AArch32 mode, which is required to run AArch32 on Juno.
    By default this flag is set to '0'. Enabling this flag builds BL1 and BL2 in
@@ -521,6 +526,11 @@ Common build options
 
 -  ``SPM_MM`` : Boolean option to enable the Management Mode (MM)-based Secure
    Partition Manager (SPM) implementation. The default value is ``0``.
+
+-  ``SP_LAYOUT_FILE``: Platform provided path to JSON file containing the
+   description of secure partitions. Build system will parse this file and
+   package all secure partition blobs in FIP. This file not necessarily be
+   part of TF-A tree. Only avaialbe when ``SPD=spmd``.
 
 -  ``SP_MIN_WITH_SECURE_FIQ``: Boolean flag to indicate the SP_MIN handles
    secure interrupts (caught through the FIQ line). Platforms can enable
