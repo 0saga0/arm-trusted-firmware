@@ -6,6 +6,7 @@
 
 #include <platform_def.h>
 
+#include <common/bl_common.ld.h>
 #include <lib/xlat_tables/xlat_tables_defs.h>
 
 OUTPUT_FORMAT(PLATFORM_LINKER_FORMAT)
@@ -54,6 +55,11 @@ SECTIONS
         KEEP(*(rt_svc_descs))
         __RT_SVC_DESCS_END__ = .;
 
+        . = ALIGN(8);
+         __FCONF_POPULATOR_START__ = .;
+        KEEP(*(.fconf_populator))
+         __FCONF_POPULATOR_END__ = .;
+
 #if ENABLE_PMF
         /* Ensure 8-byte alignment for descriptors and ensure inclusion */
         . = ALIGN(8);
@@ -100,6 +106,11 @@ SECTIONS
         __RT_SVC_DESCS_START__ = .;
         KEEP(*(rt_svc_descs))
         __RT_SVC_DESCS_END__ = .;
+
+        . = ALIGN(8);
+         __FCONF_POPULATOR_START__ = .;
+        KEEP(*(.fconf_populator))
+         __FCONF_POPULATOR_END__ = .;
 
 #if ENABLE_PMF
         /* Ensure 8-byte alignment for descriptors and ensure inclusion */
@@ -287,15 +298,7 @@ SECTIONS
         __BSS_END__ = .;
     } >NOBITS
 
-    /*
-     * The xlat_table section is for full, aligned page tables (4K).
-     * Removing them from .bss avoids forcing 4K alignment on
-     * the .bss section. The tables are initialized to zero by the translation
-     * tables library.
-     */
-    xlat_table (NOLOAD) : {
-        *(xlat_table)
-    } >NOBITS
+    XLAT_TABLE_SECTION >NOBITS
 
 #if USE_COHERENT_MEM
     /*

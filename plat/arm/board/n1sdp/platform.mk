@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2019, ARM Limited and Contributors. All rights reserved.
+# Copyright (c) 2018-2020, ARM Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -18,6 +18,8 @@ N1SDP_CPU_SOURCES	:=	lib/cpus/aarch64/neoverse_n1.S
 N1SDP_GIC_SOURCES	:=	drivers/arm/gic/common/gic_common.c	\
 				drivers/arm/gic/v3/gicv3_main.c		\
 				drivers/arm/gic/v3/gicv3_helpers.c	\
+				drivers/arm/gic/v3/gicdv3_helpers.c	\
+				drivers/arm/gic/v3/gicrv3_helpers.c	\
 				drivers/arm/gic/v3/gic600_multichip.c	\
 				plat/common/plat_gicv3.c		\
 				plat/arm/common/arm_gicv3.c		\
@@ -63,6 +65,9 @@ HW_ASSISTED_COHERENCY			:=	1
 # When building for systems with hardware-assisted coherency, there's no need to
 # use USE_COHERENT_MEM. Require that USE_COHERENT_MEM must be set to 0 too.
 USE_COHERENT_MEM			:=	0
+
+# Enable the flag since N1SDP has a system level cache
+NEOVERSE_N1_EXTERNAL_LLC		:=	1
 include plat/arm/common/arm_common.mk
 include plat/arm/css/common/css_common.mk
 include plat/arm/board/common/board_common.mk
