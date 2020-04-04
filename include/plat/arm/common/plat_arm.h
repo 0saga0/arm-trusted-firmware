@@ -148,11 +148,6 @@ void arm_setup_romlib(void);
 #define ARM_ROTPK_DEVEL_RSA_ID		2
 #define ARM_ROTPK_DEVEL_ECDSA_ID	3
 
-/* Defines used to retrieve ARM SOC revision */
-#define ARM_SOC_CONTINUATION_CODE	U(0x4)
-#define ARM_SOC_IDENTIFICATION_CODE	U(0x3B)
-#define ARM_SOC_CONTINUATION_SHIFT	U(24)
-#define ARM_SOC_IDENTIFICATION_SHIFT	U(16)
 
 /* IO storage utility functions */
 int arm_io_setup(void);
@@ -237,6 +232,11 @@ bool arm_io_is_toc_valid(void);
 void arm_bl2_dyn_cfg_init(void);
 void arm_bl1_set_mbedtls_heap(void);
 int arm_get_mbedtls_heap(void **heap_addr, size_t *heap_size);
+
+#if MEASURED_BOOT
+/* Measured boot related functions */
+void arm_bl1_set_bl2_hash(image_desc_t *image_desc);
+#endif
 
 /*
  * Free the memory storing initialization code only used during an images boot

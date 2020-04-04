@@ -10,11 +10,6 @@ FVP_USE_GIC_DRIVER	:= FVP_GICV3
 # Use the SP804 timer instead of the generic one
 FVP_USE_SP804_TIMER	:= 0
 
-# Use fconf based io for FVP
-ifeq ($(BL2_AT_EL3), 0)
-USE_FCONF_BASED_IO	:= 1
-endif
-
 # Default cluster count for FVP
 FVP_CLUSTER_COUNT	:= 2
 
@@ -53,21 +48,23 @@ endif
 
 $(eval $(call add_define,FVP_INTERCONNECT_DRIVER))
 
-FVP_GICV3_SOURCES	:=	drivers/arm/gic/common/gic_common.c	\
-				drivers/arm/gic/v3/gicv3_main.c		\
-				drivers/arm/gic/v3/gicv3_helpers.c	\
-				drivers/arm/gic/v3/gicdv3_helpers.c	\
-				drivers/arm/gic/v3/gicrv3_helpers.c	\
+# Choose the GIC sources depending upon the how the FVP will be invoked
+ifeq (${FVP_USE_GIC_DRIVER},$(filter ${FVP_USE_GIC_DRIVER},FVP_GICV3 FVP_GIC600))
+	ifeq (${FVP_USE_GIC_DRIVER}, FVP_GIC600)
+		GICV3_IMPL	:=	GIC600
+	endif
+
+# GIC500 is the default option in case GICV3_IMPL is not set
+
+GICV3_OVERRIDE_DISTIF_PWR_OPS	:=	1
+
+# Include GICv3 driver files
+include drivers/arm/gic/v3/gicv3.mk
+
+FVP_GIC_SOURCES		:=	${GICV3_SOURCES}			\
 				plat/common/plat_gicv3.c		\
 				plat/arm/common/arm_gicv3.c
 
-# Choose the GIC sources depending upon the how the FVP will be invoked
-ifeq (${FVP_USE_GIC_DRIVER}, FVP_GICV3)
-FVP_GIC_SOURCES		:=	${FVP_GICV3_SOURCES}			\
-				drivers/arm/gic/v3/gic500.c
-else ifeq (${FVP_USE_GIC_DRIVER},FVP_GIC600)
-FVP_GIC_SOURCES		:=	${FVP_GICV3_SOURCES}			\
-				drivers/arm/gic/v3/gic600.c
 else ifeq (${FVP_USE_GIC_DRIVER}, FVP_GICV2)
 FVP_GIC_SOURCES		:=	drivers/arm/gic/common/gic_common.c	\
 				drivers/arm/gic/v2/gicv2_main.c		\
@@ -300,30 +297,30 @@ endif
 # Enable the dynamic translation tables library.
 ifeq (${ARCH},aarch32)
     ifeq (${RESET_TO_SP_MIN},1)
-        BL32_CFLAGS	+=	-DPLAT_XLAT_TABLES_DYNAMIC=1
+        BL32_CPPFLAGS	+=	-DPLAT_XLAT_TABLES_DYNAMIC
     endif
 else # AArch64
     ifeq (${RESET_TO_BL31},1)
-        BL31_CFLAGS	+=	-DPLAT_XLAT_TABLES_DYNAMIC=1
+        BL31_CPPFLAGS	+=	-DPLAT_XLAT_TABLES_DYNAMIC
     endif
     ifeq (${SPD},trusty)
-        BL31_CFLAGS	+=	-DPLAT_XLAT_TABLES_DYNAMIC=1
+        BL31_CPPFLAGS	+=	-DPLAT_XLAT_TABLES_DYNAMIC
     endif
 endif
 
 ifeq (${ALLOW_RO_XLAT_TABLES}, 1)
     ifeq (${ARCH},aarch32)
-        BL32_CFLAGS	+=	-DPLAT_RO_XLAT_TABLES=1
+        BL32_CPPFLAGS	+=	-DPLAT_RO_XLAT_TABLES
     else # AArch64
-        BL31_CFLAGS	+=	-DPLAT_RO_XLAT_TABLES=1
+        BL31_CPPFLAGS	+=	-DPLAT_RO_XLAT_TABLES
         ifeq (${SPD},tspd)
-            BL32_CFLAGS	+=	-DPLAT_RO_XLAT_TABLES=1
+            BL32_CPPFLAGS +=	-DPLAT_RO_XLAT_TABLES
         endif
     endif
 endif
 
 ifeq (${USE_DEBUGFS},1)
-    BL31_CFLAGS	+=	-DPLAT_XLAT_TABLES_DYNAMIC=1
+    BL31_CPPFLAGS	+=	-DPLAT_XLAT_TABLES_DYNAMIC
 endif
 
 # Add support for platform supplied linker script for BL31 build

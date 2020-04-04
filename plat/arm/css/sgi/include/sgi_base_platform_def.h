@@ -56,7 +56,7 @@
  * PLAT_ARM_MAX_BL1_RW_SIZE is calculated using the current BL1 RW debug size
  * plus a little space for growth.
  */
-#define PLAT_ARM_MAX_BL1_RW_SIZE	0xB000
+#define PLAT_ARM_MAX_BL1_RW_SIZE	0xC000
 
 /*
  * PLAT_ARM_MAX_ROMLIB_RW_SIZE is define to use a full page
@@ -141,7 +141,7 @@
 				CSS_SGI_REMOTE_CHIP_MEM_OFFSET(n) +		\
 				ARM_SHARED_RAM_BASE,				\
 				ARM_SHARED_RAM_SIZE,				\
-				MT_MEMORY | MT_RW | MT_SECURE			\
+				MT_NON_CACHEABLE | MT_RW | MT_SECURE		\
 			)
 
 #define CSS_SGI_MAP_DEVICE_REMOTE_CHIP(n)					\

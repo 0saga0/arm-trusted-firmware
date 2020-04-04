@@ -39,12 +39,20 @@ PLAT				:= ${DEFAULT_PLAT}
 
 CHECKCODE_ARGS		:=	--no-patch
 # Do not check the coding style on imported library files or documentation files
+INC_ARM_DIRS_TO_CHECK	:=	$(sort $(filter-out                     \
+					include/drivers/arm/cryptocell,	\
+					$(wildcard include/drivers/arm/*)))
+INC_ARM_DIRS_TO_CHECK	+=	include/drivers/arm/cryptocell/*.h
+INC_DRV_DIRS_TO_CHECK	:=	$(sort $(filter-out			\
+					include/drivers/arm,		\
+					$(wildcard include/drivers/*)))
 INC_LIB_DIRS_TO_CHECK	:=	$(sort $(filter-out			\
 					include/lib/libfdt		\
 					include/lib/libc,		\
 					$(wildcard include/lib/*)))
 INC_DIRS_TO_CHECK	:=	$(sort $(filter-out			\
-					include/lib,			\
+					include/lib			\
+					include/drivers,		\
 					$(wildcard include/*)))
 LIB_DIRS_TO_CHECK	:=	$(sort $(filter-out			\
 					lib/compiler-rt			\
@@ -60,7 +68,9 @@ ROOT_DIRS_TO_CHECK	:=	$(sort $(filter-out			\
 CHECK_PATHS		:=	${ROOT_DIRS_TO_CHECK}			\
 				${INC_DIRS_TO_CHECK}			\
 				${INC_LIB_DIRS_TO_CHECK}		\
-				${LIB_DIRS_TO_CHECK}
+				${LIB_DIRS_TO_CHECK}			\
+				${INC_DRV_DIRS_TO_CHECK}		\
+				${INC_ARM_DIRS_TO_CHECK}
 
 
 ################################################################################
@@ -83,26 +93,6 @@ ifneq ($(findstring s,$(filter-out --%,$(MAKEFLAGS))),)
 endif
 
 export Q ECHO
-
-# Process Debug flag
-$(eval $(call add_define,DEBUG))
-ifneq (${DEBUG}, 0)
-        BUILD_TYPE	:=	debug
-        TF_CFLAGS	+= 	-g
-
-        ifneq ($(findstring clang,$(notdir $(CC))),)
-             ASFLAGS		+= 	-g
-        else
-             ASFLAGS		+= 	-g -Wa,--gdwarf-2
-        endif
-
-        # Use LOG_LEVEL_INFO by default for debug builds
-        LOG_LEVEL	:=	40
-else
-        BUILD_TYPE	:=	release
-        # Use LOG_LEVEL_NOTICE by default for release builds
-        LOG_LEVEL	:=	20
-endif
 
 # Default build string (git branch and commit)
 ifeq (${BUILD_STRING},)
@@ -207,6 +197,34 @@ march64-directive	= 	-march=armv8.${ARM_ARCH_MINOR}-a
 endif
 endif
 
+# Memory tagging is supported in architecture Armv8.5-A AArch64 and onwards
+ifeq ($(ARCH), aarch64)
+ifeq ($(shell test $(ARM_ARCH_MAJOR) -gt 8; echo $$?),0)
+mem_tag_arch_support	= 	yes
+else ifeq ($(shell test $(ARM_ARCH_MAJOR) -eq 8 -a $(ARM_ARCH_MINOR) -ge 5; \
+	   echo $$?),0)
+mem_tag_arch_support	= 	yes
+endif
+endif
+
+# Enabled required option for memory stack tagging. Currently, these options are
+# enabled only for clang and armclang compiler.
+ifeq (${SUPPORT_STACK_MEMTAG},yes)
+ifdef mem_tag_arch_support
+ifneq ( ,$(filter $(notdir $(CC)),armclang clang))
+march64-directive       =       -march=armv${ARM_ARCH_MAJOR}.${ARM_ARCH_MINOR}-a+memtag
+ifeq ($(notdir $(CC)),armclang)
+TF_CFLAGS		+=	-mmemtag-stack
+else ifeq ($(notdir $(CC)),clang)
+TF_CFLAGS		+=	-fsanitize=memtag
+endif
+endif
+else
+$(error "Error: stack memory tagging is not supported for architecture \
+	${ARCH},armv${ARM_ARCH_MAJOR}.${ARM_ARCH_MINOR}-a")
+endif
+endif
+
 ifneq ($(findstring armclang,$(notdir $(CC))),)
 TF_CFLAGS_aarch32	=	-target arm-arm-none-eabi $(march32-directive)
 TF_CFLAGS_aarch64	=	-target aarch64-arm-none-eabi $(march64-directive)
@@ -241,6 +259,26 @@ else
 TF_CFLAGS_aarch32	=	$(march32-directive)
 TF_CFLAGS_aarch64	=	$(march64-directive)
 LD			=	$(LINKER)
+endif
+
+# Process Debug flag
+$(eval $(call add_define,DEBUG))
+ifneq (${DEBUG}, 0)
+        BUILD_TYPE	:=	debug
+        TF_CFLAGS	+= 	-g
+
+        ifneq ($(findstring clang,$(notdir $(CC))),)
+             ASFLAGS		+= 	-g
+        else
+             ASFLAGS		+= 	-g -Wa,--gdwarf-2
+        endif
+
+        # Use LOG_LEVEL_INFO by default for debug builds
+        LOG_LEVEL	:=	40
+else
+        BUILD_TYPE	:=	release
+        # Use LOG_LEVEL_NOTICE by default for release builds
+        LOG_LEVEL	:=	20
 endif
 
 ifeq (${AARCH32_INSTRUCTION_SET},A32)
@@ -364,7 +402,12 @@ endif
 endif
 
 DTC_FLAGS		+=	-I dts -O dtb
-DTC_CPPFLAGS		+=	-P -nostdinc -Iinclude -Ifdts -undef -x assembler-with-cpp
+DTC_CPPFLAGS		+=	-P -nostdinc -Iinclude -Ifdts -undef \
+				-x assembler-with-cpp $(DEFINES)
+
+ifeq ($(MEASURED_BOOT),1)
+DTC_CPPFLAGS		+=	-DMEASURED_BOOT -DBL2_HASH_SIZE=${TCG_DIGEST_SIZE}
+endif
 
 ################################################################################
 # Common sources and include directories
@@ -501,6 +544,18 @@ ifeq ($(ARCH),aarch64)
 	BL32_CFLAGS	+=	-fpie
 	BL32_LDFLAGS	+=	$(PIE_LDFLAGS)
 endif
+endif
+
+ifeq (${ARCH},aarch64)
+BL1_CPPFLAGS += -DIMAGE_AT_EL3
+ifeq ($(BL2_AT_EL3),1)
+BL2_CPPFLAGS += -DIMAGE_AT_EL3
+else
+BL2_CPPFLAGS += -DIMAGE_AT_EL1
+endif
+BL2U_CPPFLAGS += -DIMAGE_AT_EL1
+BL31_CPPFLAGS += -DIMAGE_AT_EL3
+BL32_CPPFLAGS += -DIMAGE_AT_EL1
 endif
 
 # Include the CPU specific operations makefile, which provides default
@@ -826,7 +881,7 @@ $(eval $(call assert_boolean,SPMD_SPM_AT_SEL2))
 $(eval $(call assert_boolean,TRUSTED_BOARD_BOOT))
 $(eval $(call assert_boolean,USE_COHERENT_MEM))
 $(eval $(call assert_boolean,USE_DEBUGFS))
-$(eval $(call assert_boolean,USE_FCONF_BASED_IO))
+$(eval $(call assert_boolean,ARM_IO_IN_DTB))
 $(eval $(call assert_boolean,USE_ROMLIB))
 $(eval $(call assert_boolean,USE_TBBR_DEFS))
 $(eval $(call assert_boolean,WARMBOOT_ENABLE_DCACHE_EARLY))
@@ -904,7 +959,7 @@ $(eval $(call add_define,SPMD_SPM_AT_SEL2))
 $(eval $(call add_define,TRUSTED_BOARD_BOOT))
 $(eval $(call add_define,USE_COHERENT_MEM))
 $(eval $(call add_define,USE_DEBUGFS))
-$(eval $(call add_define,USE_FCONF_BASED_IO))
+$(eval $(call add_define,ARM_IO_IN_DTB))
 $(eval $(call add_define,USE_ROMLIB))
 $(eval $(call add_define,USE_TBBR_DEFS))
 $(eval $(call add_define,WARMBOOT_ENABLE_DCACHE_EARLY))
@@ -938,13 +993,18 @@ $(eval $(call add_define,USE_ARM_LINK))
 endif
 
 # Generate and include sp_gen.mk if SPD is spmd and SP_LAYOUT_FILE is defined
-ifdef SP_LAYOUT_FILE
 ifeq (${SPD},spmd)
+ifdef SP_LAYOUT_FILE
+        ifeq (${SPMD_SPM_AT_SEL2},0)
+            $(error "SPMD with SPM at S-EL1 does not require SP_LAYOUT_FILE")
+        endif
         -include $(BUILD_PLAT)/sp_gen.mk
         FIP_DEPS += sp
         NEED_SP_PKG := yes
 else
-        $(error "SP_LAYOUT_FILE will be used only if SPD=spmd")
+        ifeq (${SPMD_SPM_AT_SEL2},1)
+            $(error "SPMD with SPM at S-EL2 require SP_LAYOUT_FILE")
+        endif
 endif
 endif
 

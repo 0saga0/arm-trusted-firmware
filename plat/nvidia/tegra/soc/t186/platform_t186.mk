@@ -14,7 +14,7 @@ $(eval $(call add_define,ENABLE_CHIP_VERIFICATION_HARNESS))
 
 RESET_TO_BL31				:= 1
 
-PROGRAMMABLE_RESET_ADDRESS		:= 1
+PROGRAMMABLE_RESET_ADDRESS		:= 0
 
 COLD_BOOT_SINGLE_CPU			:= 1
 
@@ -33,11 +33,12 @@ $(eval $(call add_define,PLATFORM_MAX_CPUS_PER_CLUSTER))
 MAX_XLAT_TABLES				:= 25
 $(eval $(call add_define,MAX_XLAT_TABLES))
 
-MAX_MMAP_REGIONS			:= 27
+MAX_MMAP_REGIONS			:= 30
 $(eval $(call add_define,MAX_MMAP_REGIONS))
 
 # platform files
-PLAT_INCLUDES		+=	-I${SOC_DIR}/drivers/include
+PLAT_INCLUDES		+=	-Iplat/nvidia/tegra/include/t186 \
+				-I${SOC_DIR}/drivers/include
 
 BL31_SOURCES		+=	drivers/ti/uart/aarch64/16550_console.S	\
 				lib/cpus/aarch64/denver.S		\

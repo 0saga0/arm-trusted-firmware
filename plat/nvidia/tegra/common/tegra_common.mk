@@ -6,8 +6,7 @@
 
 PLAT_INCLUDES		:=	-Iplat/nvidia/tegra/include/drivers \
 				-Iplat/nvidia/tegra/include/lib \
-				-Iplat/nvidia/tegra/include \
-				-Iplat/nvidia/tegra/include/${TARGET_SOC}
+				-Iplat/nvidia/tegra/include
 
 include lib/xlat_tables_v2/xlat_tables.mk
 PLAT_BL_COMMON_SOURCES	+=	${XLAT_TABLES_LIB_SRCS}
@@ -32,5 +31,4 @@ BL31_SOURCES		+=	drivers/delay_timer/delay_timer.c		\
 				${COMMON_DIR}/tegra_io_storage.c		\
 				${COMMON_DIR}/tegra_platform.c			\
 				${COMMON_DIR}/tegra_pm.c			\
-				${COMMON_DIR}/tegra_sip_calls.c			\
-				${COMMON_DIR}/tegra_topology.c
+				${COMMON_DIR}/tegra_sip_calls.c

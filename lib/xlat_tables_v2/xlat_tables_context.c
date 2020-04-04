@@ -25,15 +25,8 @@ uint64_t mmu_cfg_params[MMU_CFG_PARAM_MAX];
  * Allocate and initialise the default translation context for the BL image
  * currently executing.
  */
-#if PLAT_RO_XLAT_TABLES
-#define BASE_XLAT_TABLE_SECTION		".rodata"
-#else
-#define BASE_XLAT_TABLE_SECTION		".bss"
-#endif
-
 REGISTER_XLAT_CONTEXT(tf, MAX_MMAP_REGIONS, MAX_XLAT_TABLES,
-		      PLAT_VIRT_ADDR_SPACE_SIZE, PLAT_PHY_ADDR_SPACE_SIZE,
-		      BASE_XLAT_TABLE_SECTION);
+		      PLAT_VIRT_ADDR_SPACE_SIZE, PLAT_PHY_ADDR_SPACE_SIZE);
 
 void mmap_add_region(unsigned long long base_pa, uintptr_t base_va, size_t size,
 		     unsigned int attr)
@@ -237,6 +230,23 @@ void enable_mmu_el3(unsigned int flags)
 		      tf_xlat_ctx.base_table, MAX_PHYS_ADDR,
 		      tf_xlat_ctx.va_max_address, EL3_REGIME);
 	enable_mmu_direct_el3(flags);
+}
+
+void enable_mmu(unsigned int flags)
+{
+	switch (get_current_el_maybe_constant()) {
+	case 1:
+		enable_mmu_el1(flags);
+		break;
+	case 2:
+		enable_mmu_el2(flags);
+		break;
+	case 3:
+		enable_mmu_el3(flags);
+		break;
+	default:
+		panic();
+	}
 }
 
 #else /* !__aarch64__ */
