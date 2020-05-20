@@ -645,6 +645,11 @@ Common build options
    configuration device tree, instead of static structure in the code base.
    This is currently an experimental feature.
 
+-  ``SDEI_IN_FCONF``: This flag determines whether to configure SDEI setup in
+   runtime using firmware configuration framework. The platform specific SDEI
+   shared and private events configuration is retrieved from device tree rather
+   than static C structures at compile time. This is currently an experimental
+   feature and is only supported if SDEI_SUPPORT build flag is enabled.
 
 -  ``USE_ROMLIB``: This flag determines whether library at ROM will be used.
    This feature creates a library of functions to be placed in ROM and thus
@@ -672,6 +677,29 @@ Common build options
    tagging for stack or not. It accepts 2 values: ``yes`` and ``no``. The
    default value of this flag is ``no``. Note this option must be enabled only
    for ARM architecture greater than Armv8.5-A.
+
+-  ``ERRATA_SPECULATIVE_AT``: This flag enables/disables page table walk during
+   context restore as speculative AT instructions using an out-of-context
+   translation regime could cause subsequent requests to generate an incorrect
+   translation.
+   System registers are not updated during context save, hence this workaround
+   need not be applied in the context save path.
+
+   This boolean option enables errata for all below CPUs.
+
+   +---------+--------------+
+   | Errata  |      CPU     |
+   +=========+==============+
+   | 1165522 |  Cortex-A76  |
+   +---------+--------------+
+   | 1319367 |  Cortex-A72  |
+   +---------+--------------+
+   | 1319537 |  Cortex-A57  |
+   +---------+--------------+
+   | 1530923 |  Cortex-A55  |
+   +---------+--------------+
+   | 1530924 |  Cortex-A53  |
+   +---------+--------------+
 
 GICv3 driver options
 --------------------

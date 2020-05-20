@@ -651,6 +651,12 @@ ifeq ($(DYN_DISABLE_AUTH), 1)
     endif
 endif
 
+# SDEI_IN_FCONF is only supported when SDEI_SUPPORT is enabled.
+ifeq ($(SDEI_SUPPORT)-$(SDEI_IN_FCONF),0-1)
+$(error "SDEI_IN_FCONF is an experimental feature and is only supported when \
+	SDEI_SUPPORT is enabled")
+endif
+
 # If pointer authentication is used in the firmware, make sure that all the
 # registers associated to it are also saved and restored.
 # Not doing it would leak the value of the keys used by EL3 to EL1 and S-EL1.
@@ -882,6 +888,7 @@ $(eval $(call assert_boolean,TRUSTED_BOARD_BOOT))
 $(eval $(call assert_boolean,USE_COHERENT_MEM))
 $(eval $(call assert_boolean,USE_DEBUGFS))
 $(eval $(call assert_boolean,ARM_IO_IN_DTB))
+$(eval $(call assert_boolean,SDEI_IN_FCONF))
 $(eval $(call assert_boolean,USE_ROMLIB))
 $(eval $(call assert_boolean,USE_TBBR_DEFS))
 $(eval $(call assert_boolean,WARMBOOT_ENABLE_DCACHE_EARLY))
@@ -891,6 +898,7 @@ $(eval $(call assert_boolean,BL2_INV_DCACHE))
 $(eval $(call assert_boolean,USE_SPINLOCK_CAS))
 $(eval $(call assert_boolean,ENCRYPT_BL31))
 $(eval $(call assert_boolean,ENCRYPT_BL32))
+$(eval $(call assert_boolean,ERRATA_SPECULATIVE_AT))
 
 $(eval $(call assert_numeric,ARM_ARCH_MAJOR))
 $(eval $(call assert_numeric,ARM_ARCH_MINOR))
@@ -960,6 +968,7 @@ $(eval $(call add_define,TRUSTED_BOARD_BOOT))
 $(eval $(call add_define,USE_COHERENT_MEM))
 $(eval $(call add_define,USE_DEBUGFS))
 $(eval $(call add_define,ARM_IO_IN_DTB))
+$(eval $(call add_define,SDEI_IN_FCONF))
 $(eval $(call add_define,USE_ROMLIB))
 $(eval $(call add_define,USE_TBBR_DEFS))
 $(eval $(call add_define,WARMBOOT_ENABLE_DCACHE_EARLY))
@@ -967,6 +976,7 @@ $(eval $(call add_define,BL2_AT_EL3))
 $(eval $(call add_define,BL2_IN_XIP_MEM))
 $(eval $(call add_define,BL2_INV_DCACHE))
 $(eval $(call add_define,USE_SPINLOCK_CAS))
+$(eval $(call add_define,ERRATA_SPECULATIVE_AT))
 
 ifeq (${SANITIZE_UB},trap)
         $(eval $(call add_define,MONITOR_TRAPS))

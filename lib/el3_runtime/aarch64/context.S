@@ -71,53 +71,52 @@ func el2_sysregs_context_save
 	mrs	x15, far_el2
 	stp	x14, x15, [x0, #CTX_ESR_EL2]
 
-	mrs	x16, fpexc32_el2
-	mrs	x17, hacr_el2
-	stp	x16, x17, [x0, #CTX_FPEXC32_EL2]
+	mrs	x16, hacr_el2
+	mrs	x17, hcr_el2
+	stp	x16, x17, [x0, #CTX_HACR_EL2]
 
-	mrs	x9, hcr_el2
-	mrs	x10, hpfar_el2
-	stp	x9, x10, [x0, #CTX_HCR_EL2]
+	mrs	x9, hpfar_el2
+	mrs	x10, hstr_el2
+	stp	x9, x10, [x0, #CTX_HPFAR_EL2]
 
-	mrs	x11, hstr_el2
-	mrs	x12, ICC_SRE_EL2
-	stp	x11, x12, [x0, #CTX_HSTR_EL2]
+	mrs	x11, ICC_SRE_EL2
+	mrs	x12, ICH_HCR_EL2
+	stp	x11, x12, [x0, #CTX_ICC_SRE_EL2]
 
-	mrs	x13, ICH_HCR_EL2
-	mrs	x14, ICH_VMCR_EL2
-	stp	x13, x14, [x0, #CTX_ICH_HCR_EL2]
+	mrs	x13, ICH_VMCR_EL2
+	mrs	x14, mair_el2
+	stp	x13, x14, [x0, #CTX_ICH_VMCR_EL2]
 
-	mrs	x15, mair_el2
-	mrs	x16, mdcr_el2
-	stp	x15, x16, [x0, #CTX_MAIR_EL2]
+	mrs	x15, mdcr_el2
+	mrs	x16, PMSCR_EL2
+	stp	x15, x16, [x0, #CTX_MDCR_EL2]
 
-	mrs	x17, PMSCR_EL2
-	mrs	x9, sctlr_el2
-	stp	x17, x9, [x0, #CTX_PMSCR_EL2]
+	mrs	x17, sctlr_el2
+	mrs	x9, spsr_el2
+	stp	x17, x9, [x0, #CTX_SCTLR_EL2]
 
-	mrs	x10, spsr_el2
-	mrs	x11, sp_el2
-	stp	x10, x11, [x0, #CTX_SPSR_EL2]
+	mrs	x10, sp_el2
+	mrs	x11, tcr_el2
+	stp	x10, x11, [x0, #CTX_SP_EL2]
 
-	mrs	x12, tcr_el2
-	mrs	x13, tpidr_el2
-	stp	x12, x13, [x0, #CTX_TCR_EL2]
+	mrs	x12, tpidr_el2
+	mrs	x13, ttbr0_el2
+	stp	x12, x13, [x0, #CTX_TPIDR_EL2]
 
-	mrs	x14, ttbr0_el2
-	mrs	x15, vbar_el2
-	stp	x14, x15, [x0, #CTX_TTBR0_EL2]
+	mrs	x14, vbar_el2
+	mrs	x15, vmpidr_el2
+	stp	x14, x15, [x0, #CTX_VBAR_EL2]
 
-	mrs	x16, vmpidr_el2
-	mrs	x17, vpidr_el2
-	stp	x16, x17, [x0, #CTX_VMPIDR_EL2]
+	mrs	x16, vpidr_el2
+	mrs	x17, vtcr_el2
+	stp	x16, x17, [x0, #CTX_VPIDR_EL2]
 
-	mrs	x9, vtcr_el2
-	mrs	x10, vttbr_el2
-	stp	x9, x10, [x0, #CTX_VTCR_EL2]
+	mrs	x9, vttbr_el2
+	str	x9, [x0, #CTX_VTTBR_EL2]
 
 #if CTX_INCLUDE_MTE_REGS
-	mrs	x11, TFSR_EL2
-	str	x11, [x0, #CTX_TFSR_EL2]
+	mrs	x10, TFSR_EL2
+	str	x10, [x0, #CTX_TFSR_EL2]
 #endif
 
 #if ENABLE_MPAM_FOR_LOWER_ELS
@@ -234,6 +233,21 @@ endfunc el2_sysregs_context_save
  */
 func el2_sysregs_context_restore
 
+#if ERRATA_SPECULATIVE_AT
+/* Clear EPD0 and EPD1 bit and M bit to disable PTW */
+	mrs	x9, hcr_el2
+	tst	x9, #HCR_E2H_BIT
+	bne	1f
+	mrs	x9, tcr_el2
+	orr	x9, x9, #TCR_EPD0_BIT
+	orr	x9, x9, #TCR_EPD1_BIT
+	msr	tcr_el2, x9
+1:	mrs	x9, sctlr_el2
+	bic	x9, x9, #SCTLR_M_BIT
+	msr	sctlr_el2, x9
+	isb
+#endif
+
 	ldp	x9, x10, [x0, #CTX_ACTLR_EL2]
 	msr	actlr_el2, x9
 	msr	afsr0_el2, x10
@@ -262,53 +276,48 @@ func el2_sysregs_context_restore
 	msr	esr_el2, x14
 	msr	far_el2, x15
 
-	ldp	x16, x17, [x0, #CTX_FPEXC32_EL2]
-	msr	fpexc32_el2, x16
-	msr	hacr_el2, x17
+	ldp	x16, x17, [x0, #CTX_HACR_EL2]
+	msr	hacr_el2, x16
+	msr	hcr_el2, x17
 
-	ldp	x9, x10, [x0, #CTX_HCR_EL2]
-	msr	hcr_el2, x9
-	msr	hpfar_el2, x10
+	ldp	x9, x10, [x0, #CTX_HPFAR_EL2]
+	msr	hpfar_el2, x9
+	msr	hstr_el2, x10
 
-	ldp	x11, x12, [x0, #CTX_HSTR_EL2]
-	msr	hstr_el2, x11
-	msr	ICC_SRE_EL2, x12
+	ldp	x11, x12, [x0, #CTX_ICC_SRE_EL2]
+	msr	ICC_SRE_EL2, x11
+	msr	ICH_HCR_EL2, x12
 
-	ldp	x13, x14, [x0, #CTX_ICH_HCR_EL2]
-	msr	ICH_HCR_EL2, x13
-	msr	ICH_VMCR_EL2, x14
+	ldp	x13, x14, [x0, #CTX_ICH_VMCR_EL2]
+	msr	ICH_VMCR_EL2, x13
+	msr	mair_el2, x14
 
-	ldp	x15, x16, [x0, #CTX_MAIR_EL2]
-	msr	mair_el2, x15
-	msr	mdcr_el2, x16
+	ldp	x15, x16, [x0, #CTX_MDCR_EL2]
+	msr	mdcr_el2, x15
+	msr	PMSCR_EL2, x16
 
-	ldp	x17, x9, [x0, #CTX_PMSCR_EL2]
-	msr	PMSCR_EL2, x17
-	msr	sctlr_el2, x9
+	ldp	x17, x9, [x0, #CTX_SPSR_EL2]
+	msr	spsr_el2, x17
+	msr	sp_el2, x9
 
-	ldp	x10, x11, [x0, #CTX_SPSR_EL2]
-	msr	spsr_el2, x10
-	msr	sp_el2, x11
+	ldp	x10, x11, [x0, #CTX_TPIDR_EL2]
+	msr	tpidr_el2, x10
+	msr	ttbr0_el2, x11
 
-	ldp	x12, x13, [x0, #CTX_TCR_EL2]
-	msr	tcr_el2, x12
-	msr	tpidr_el2, x13
+	ldp	x12, x13, [x0, #CTX_VBAR_EL2]
+	msr	vbar_el2, x12
+	msr	vmpidr_el2, x13
 
-	ldp	x14, x15, [x0, #CTX_TTBR0_EL2]
-	msr	ttbr0_el2, x14
-	msr	vbar_el2, x15
+	ldp	x14, x15, [x0, #CTX_VPIDR_EL2]
+	msr	vpidr_el2, x14
+	msr	vtcr_el2, x15
 
-	ldp	x16, x17, [x0, #CTX_VMPIDR_EL2]
-	msr	vmpidr_el2, x16
-	msr	vpidr_el2, x17
-
-	ldp	x9, x10, [x0, #CTX_VTCR_EL2]
-	msr	vtcr_el2, x9
-	msr	vttbr_el2, x10
+	ldr	x16, [x0, #CTX_VTTBR_EL2]
+	msr	vttbr_el2, x16
 
 #if CTX_INCLUDE_MTE_REGS
-	ldr	x11, [x0, #CTX_TFSR_EL2]
-	msr	TFSR_EL2, x11
+	ldr	x17, [x0, #CTX_TFSR_EL2]
+	msr	TFSR_EL2, x17
 #endif
 
 #if ENABLE_MPAM_FOR_LOWER_ELS
@@ -403,6 +412,19 @@ func el2_sysregs_context_restore
 	ldr	x9, [x0, #CTX_SCXTNUM_EL2]
 	msr	scxtnum_el2, x9
 #endif
+
+#if ERRATA_SPECULATIVE_AT
+/*
+ * Make sure all registers are stored successfully except
+ * SCTLR_EL2 and TCR_EL2
+ */
+	isb
+#endif
+
+	ldr	x9, [x0, #CTX_SCTLR_EL2]
+	msr	sctlr_el2, x9
+	ldr	x9, [x0, #CTX_TCR_EL2]
+	msr	tcr_el2, x9
 
 	ret
 endfunc el2_sysregs_context_restore
@@ -515,12 +537,22 @@ endfunc el1_sysregs_context_save
  */
 func el1_sysregs_context_restore
 
+#if ERRATA_SPECULATIVE_AT
+	mrs	x9, tcr_el1
+	orr	x9, x9, #TCR_EPD0_BIT
+	orr	x9, x9, #TCR_EPD1_BIT
+	msr	tcr_el1, x9
+	mrs	x9, sctlr_el1
+	bic	x9, x9, #SCTLR_M_BIT
+	msr	sctlr_el1, x9
+	isb
+#endif
+
 	ldp	x9, x10, [x0, #CTX_SPSR_EL1]
 	msr	spsr_el1, x9
 	msr	elr_el1, x10
 
-	ldp	x15, x16, [x0, #CTX_SCTLR_EL1]
-	msr	sctlr_el1, x15
+	ldr	x16, [x0, #CTX_ACTLR_EL1]
 	msr	actlr_el1, x16
 
 	ldp	x17, x9, [x0, #CTX_CPACR_EL1]
@@ -539,9 +571,8 @@ func el1_sysregs_context_restore
 	msr	mair_el1, x14
 	msr	amair_el1, x15
 
-	ldp	x16, x17, [x0, #CTX_TCR_EL1]
-	msr	tcr_el1, x16
-	msr	tpidr_el1, x17
+	ldr	x16,[x0, #CTX_TPIDR_EL1]
+	msr	tpidr_el1, x16
 
 	ldp	x9, x10, [x0, #CTX_TPIDR_EL0]
 	msr	tpidr_el0, x9
@@ -596,6 +627,19 @@ func el1_sysregs_context_restore
 	msr	RGSR_EL1, x13
 	msr	GCR_EL1, x14
 #endif
+
+#if ERRATA_SPECULATIVE_AT
+/*
+ * Make sure all registers are stored successfully except
+ * SCTLR_EL1 and TCR_EL1
+ */
+	isb
+#endif
+
+	ldr	x9, [x0, #CTX_SCTLR_EL1]
+	msr	sctlr_el1, x9
+	ldr	x9, [x0, #CTX_TCR_EL1]
+	msr	tcr_el1, x9
 
 	/* No explict ISB required here as ERET covers it */
 	ret
