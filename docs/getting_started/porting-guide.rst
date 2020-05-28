@@ -1890,6 +1890,21 @@ frequency for the CPU's generic timer. This value will be programmed into the
 of the system counter, which is retrieved from the first entry in the frequency
 modes table.
 
+Function : plat_arm_set_twedel_scr_el3() [optional]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    Argument : void
+    Return   : uint32_t
+
+This function is used in v8.6+ systems to set the WFE trap delay value in
+SCR_EL3. If this function returns TWED_DISABLED or is left unimplemented, this
+feature is not enabled.  The only hook provided is to set the TWED fields in
+SCR_EL3, there are similar fields in HCR_EL2, SCTLR_EL2, and SCTLR_EL1 to adjust
+the WFE trap delays in lower ELs and these fields should be set by the
+appropriate EL2 or EL1 code depending on the platform configuration.
+
 #define : PLAT_PERCPU_BAKERY_LOCK_SIZE [optional]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1941,23 +1956,27 @@ be higher than Normal |SDEI| priority.
 Functions
 .........
 
-Function: int plat_sdei_validate_entry_point(uintptr_t ep) [optional]
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Function: int plat_sdei_validate_entry_point() [optional]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
-  Argument: uintptr_t
+  Argument: uintptr_t ep, unsigned int client_mode
   Return: int
 
-This function validates the address of client entry points provided for both
-event registration and *Complete and Resume* |SDEI| calls. The function
-takes one argument, which is the address of the handler the |SDEI| client
-requested to register. The function must return ``0`` for successful validation,
-or ``-1`` upon failure.
+This function validates the entry point address of the event handler provided by
+the client for both event registration and *Complete and Resume* |SDEI| calls.
+The function ensures that the address is valid in the client translation regime.
+
+The second argument is the exception level that the client is executing in. It
+can be Non-Secure EL1 or Non-Secure EL2.
+
+The function must return ``0`` for successful validation, or ``-1`` upon failure.
 
 The default implementation always returns ``0``. On Arm platforms, this function
-is implemented to translate the entry point to physical address, and further to
-ensure that the address is located in Non-secure DRAM.
+translates the entry point address within the client translation regime and
+further ensures that the resulting physical address is located in Non-secure
+DRAM.
 
 Function: void plat_sdei_handle_masked_trigger(uint64_t mpidr, unsigned int intr) [optional]
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

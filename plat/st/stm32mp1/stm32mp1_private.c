@@ -76,6 +76,28 @@ void configure_mmu(void)
 	enable_mmu_svc_mon(0);
 }
 
+uintptr_t stm32_get_gpio_bank_base(unsigned int bank)
+{
+	if (bank == GPIO_BANK_Z) {
+		return GPIOZ_BASE;
+	}
+
+	assert(GPIO_BANK_A == 0 && bank <= GPIO_BANK_K);
+
+	return GPIOA_BASE + (bank * GPIO_BANK_OFFSET);
+}
+
+uint32_t stm32_get_gpio_bank_offset(unsigned int bank)
+{
+	if (bank == GPIO_BANK_Z) {
+		return 0;
+	}
+
+	assert(GPIO_BANK_A == 0 && bank <= GPIO_BANK_K);
+
+	return bank * GPIO_BANK_OFFSET;
+}
+
 unsigned long stm32_get_gpio_bank_clock(unsigned int bank)
 {
 	if (bank == GPIO_BANK_Z) {
@@ -85,6 +107,28 @@ unsigned long stm32_get_gpio_bank_clock(unsigned int bank)
 	assert(GPIO_BANK_A == 0 && bank <= GPIO_BANK_K);
 
 	return GPIOA + (bank - GPIO_BANK_A);
+}
+
+int stm32_get_gpio_bank_pinctrl_node(void *fdt, unsigned int bank)
+{
+	switch (bank) {
+	case GPIO_BANK_A:
+	case GPIO_BANK_B:
+	case GPIO_BANK_C:
+	case GPIO_BANK_D:
+	case GPIO_BANK_E:
+	case GPIO_BANK_F:
+	case GPIO_BANK_G:
+	case GPIO_BANK_H:
+	case GPIO_BANK_I:
+	case GPIO_BANK_J:
+	case GPIO_BANK_K:
+		return fdt_path_offset(fdt, "/soc/pin-controller");
+	case GPIO_BANK_Z:
+		return fdt_path_offset(fdt, "/soc/pin-controller-z");
+	default:
+		panic();
+	}
 }
 
 static int get_part_number(uint32_t *part_nb)

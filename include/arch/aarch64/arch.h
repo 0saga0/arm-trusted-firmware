@@ -226,6 +226,12 @@
 #define ID_AA64MMFR0_EL1_TGRAN16_SUPPORTED	ULL(0x1)
 #define ID_AA64MMFR0_EL1_TGRAN16_NOT_SUPPORTED	ULL(0x0)
 
+/* ID_AA64MMFR1_EL1 definitions */
+#define ID_AA64MMFR1_EL1_TWED_SHIFT		U(32)
+#define ID_AA64MMFR1_EL1_TWED_MASK		ULL(0xf)
+#define ID_AA64MMFR1_EL1_TWED_SUPPORTED		ULL(0x1)
+#define ID_AA64MMFR1_EL1_TWED_NOT_SUPPORTED	ULL(0x0)
+
 /* ID_AA64MMFR2_EL1 definitions */
 #define ID_AA64MMFR2_EL1		S3_0_C0_C7_2
 
@@ -252,6 +258,9 @@
 #define MTE_UNIMPLEMENTED	ULL(0)
 #define MTE_IMPLEMENTED_EL0	ULL(1)	/* MTE is only implemented at EL0 */
 #define MTE_IMPLEMENTED_ELX	ULL(2)	/* MTE is implemented at all ELs */
+
+#define ID_AA64PFR1_MPAM_FRAC_SHIFT	ULL(16)
+#define ID_AA64PFR1_MPAM_FRAC_MASK	ULL(0xf)
 
 /* ID_PFR1_EL1 definitions */
 #define ID_PFR1_VIRTEXT_SHIFT	U(12)
@@ -312,6 +321,9 @@
 
 /* SCR definitions */
 #define SCR_RES1_BITS		((U(1) << 4) | (U(1) << 5))
+#define SCR_TWEDEL_SHIFT	U(30)
+#define SCR_TWEDEL_MASK		ULL(0xf)
+#define SCR_TWEDEn_BIT		(UL(1) << 29)
 #define SCR_ATA_BIT		(U(1) << 26)
 #define SCR_FIEN_BIT		(U(1) << 21)
 #define SCR_EEL2_BIT		(U(1) << 18)

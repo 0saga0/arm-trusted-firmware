@@ -1,49 +1,39 @@
-SPCI manifest binding to device tree
-====================================
+PSA FF-A manifest binding to device tree
+========================================
 
 This document defines the nodes and properties used to define a partition,
-according to the SPCI specification.
+according to the PSA FF-A specification.
 
 Version 1.0
 -----------
 
-spci-manifest-partition
-^^^^^^^^^^^^^^^^^^^^^^^
+Partition Properties
+^^^^^^^^^^^^^^^^^^^^
 
 - compatible [mandatory]
    - value type: <string>
-   - Must be the string "arm,spci-manifest-X.Y" which specifies the major and
-     minor versions fo the device tree binding for the SPCI manifest represented
+   - Must be the string "arm,ffa-manifest-X.Y" which specifies the major and
+     minor versions fo the device tree binding for the FFA manifest represented
      by this node. The minor number is incremented if the binding changes in a
      backwards compatible manner.
 
       - X is an integer representing the major version number of this document.
       - Y is an integer representing the minor version number of this document.
 
-- spci-version [mandatory]
+- ffa-version [mandatory]
    - value type: <u32>
    - Must be two 16 bits values (X, Y), concatenated as 31:16 -> X,
      15:0 -> Y, where:
 
-      - X is the major version of PSA-FF-A expected by the partition at the SPCI
+      - X is the major version of PSA-FF-A expected by the partition at the FFA
         instance it will execute.
-      - Y is the minor version of PSA-FF-A expected by the partition at the SPCI
+      - Y is the minor version of PSA-FF-A expected by the partition at the FFA
         instance it will execute.
 
 - uuid [mandatory]
    - value type: <prop-encoded-array>
    - An array consisting of 4 <u32> values, identifying the UUID of the service
      implemented by this partition. The UUID format is described in RFC 4122.
-     UUID can be shared by multiple instances of partitions that offer the same
-     service For example:
-
-      - If there are multiple instances of a Trusted OS, then the UUID can be
-        shared by all instances.
-      - The TEE driver in the HLOS can use the UUID with the
-        SPCI_PARTITION_INFO_GET interface to determine the:
-
-         - Number of Trusted OSs
-         - The partition ID of each instance of the Trusted OS
 
 - id
    - value type: <u32>
@@ -75,9 +65,6 @@ spci-manifest-partition
       - 0x0: EL1
       - 0x1: S_EL0
       - 0x2: S_EL1
-      - 0x3: EL2
-      - 0x4: Supervisor mode
-      - 0x5: Secure User mode
 
 - execution-state [mandatory]
    - value type: <u32>
@@ -104,7 +91,7 @@ spci-manifest-partition
 
       - 0x0: 4k
       - 0x1: 16k
-      - 0x2: 32k
+      - 0x2: 64k
 
 - boot-order
    - value type: <u32>
@@ -116,7 +103,7 @@ spci-manifest-partition
    - value type: "memory-regions" node
    - Specific "memory-regions" nodes that describe the RX/TX buffers expected
      by the partition.
-     The "compatible" must be the string "arm,spci-manifest-rx_tx-buffer".
+     The "compatible" must be the string "arm,ffa-manifest-rx_tx-buffer".
 
 - messaging-method [mandatory]
    - value type: <u32>
@@ -146,7 +133,7 @@ spci-manifest-partition
 - gp-register-num
    - value type: <u32>
    - Presence of this field indicates that the partition expects the
-     spci_init_info structure to be passed in via the specified general purpose
+     ffa_init_info structure to be passed in via the specified general purpose
      register.
      The field specifies the general purpose register number but not its width.
      The width is derived from the partition's execution state, as specified in
@@ -159,12 +146,12 @@ spci-manifest-partition
    - List of <u32> tuples, identifying the IDs this partition is acting as
      proxy for.
 
-memory-regions
+Memory Regions
 --------------
 
 - compatible [mandatory]
    - value type: <string>
-   - Must be the string "arm,spci-manifest-memory-regions".
+   - Must be the string "arm,ffa-manifest-memory-regions".
 
 - description
    - value type: <string>
@@ -177,26 +164,30 @@ memory-regions
 
 - attributes [mandatory]
    - value type: <u32>
-   - ?? TO DEFINE
+   - Mapping modes: ORed to get required permission
+
+      - 0x1: Read
+      - 0x2: Write
+      - 0x4: Execute
 
 - base-address
    - value type: <u64>
    - Base address of the region. The address must be aligned to the translation
      granule size.
      The address given may be a Physical Address (PA), Virtual Address (VA), or
-     Intermediate Physical Address (IPA). Refer to the SPCI specification for
+     Intermediate Physical Address (IPA). Refer to the FFA specification for
      more information on the restrictions around the address type.
      If the base address is omitted then the partition manager must map a memory
      region of the specified size into the partition's translation regime and
      then communicate the region properties (including the base address chosen
      by the partition manager) to the partition.
 
-device-regions
+Device Regions
 --------------
 
 - compatible [mandatory]
    - value type: <string>
-   - Must be the string "arm,spci-manifest-device-regions".
+   - Must be the string "arm,ffa-manifest-device-regions".
 
 - description
    - value type: <string>
@@ -213,7 +204,11 @@ device-regions
 
 - attributes [mandatory]
    - value type: <u32>
-   - ?? TO DEFINE
+   - Mapping modes: ORed to get required permission
+
+     - 0x1: Read
+     - 0x2: Write
+     - 0x4: Execute
 
 - smmu-id
    - value type: <u32>
@@ -222,19 +217,18 @@ device-regions
      upstream of. If the field is omitted then it is assumed that the device is
      not upstream of any SMMU.
 
-- stream-ids [mandatory]
+- stream-ids
    - value type: <prop-encoded-array>
    - A list of (id, mem-manage) pair, where:
 
       - id: A unique <u32> value amongst all devices assigned to the partition.
-      - mem-manage: A <u32> value used in memory management operations.
 
 - interrupts [mandatory]
    - value type: <prop-encoded-array>
    - A list of (id, attributes) pair describing the device interrupts, where:
 
       - id: The <u32> interrupt IDs.
-      - attributes: A ?? TO DEFINE value,
+      - attributes: A <u32> value,
         containing the attributes for each interrupt ID:
 
          - Interrupt type: SPI, PPI, SGI
