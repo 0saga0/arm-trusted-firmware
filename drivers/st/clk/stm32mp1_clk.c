@@ -108,6 +108,7 @@ enum stm32mp1_parent_sel {
 	_USBO_SEL,
 	_MPU_SEL,
 	_PER_SEL,
+	_RTC_SEL,
 	_PARENT_SEL_NB,
 	_UNKNOWN_SEL = 0xff,
 };
@@ -310,7 +311,8 @@ struct stm32mp1_clk_pll {
 	[_ ## _label ## _SEL] = {				\
 		.offset = _rcc_selr,				\
 		.src = _rcc_selr ## _ ## _label ## SRC_SHIFT,	\
-		.msk = _rcc_selr ## _ ## _label ## SRC_MASK,	\
+		.msk = (_rcc_selr ## _ ## _label ## SRC_MASK) >> \
+		       (_rcc_selr ## _ ## _label ## SRC_SHIFT), \
 		.parent = (_parents),				\
 		.nb_parent = ARRAY_SIZE(_parents)		\
 	}
@@ -407,6 +409,7 @@ static const struct stm32mp1_clk_gate stm32mp1_clk_gate[] = {
 	_CLK_SC_SELEC(RCC_MP_AHB6ENSETR, 17, SDMMC2_K, _SDMMC12_SEL),
 	_CLK_SC_SELEC(RCC_MP_AHB6ENSETR, 24, USBH, _UNKNOWN_SEL),
 
+	_CLK_SELEC(RCC_BDCR, 20, RTC, _RTC_SEL),
 	_CLK_SELEC(RCC_DBGCFGR, 8, CK_DBG, _UNKNOWN_SEL),
 };
 
@@ -486,6 +489,10 @@ static const uint8_t per_parents[] = {
 	_HSI, _HSE, _CSI,
 };
 
+static const uint8_t rtc_parents[] = {
+	_UNKNOWN_ID, _LSE, _LSI, _HSE
+};
+
 static const struct stm32mp1_clk_sel stm32mp1_clk_sel[_PARENT_SEL_NB] = {
 	_CLK_PARENT_SEL(I2C12, RCC_I2C12CKSELR, i2c12_parents),
 	_CLK_PARENT_SEL(I2C35, RCC_I2C35CKSELR, i2c35_parents),
@@ -496,6 +503,7 @@ static const struct stm32mp1_clk_sel stm32mp1_clk_sel[_PARENT_SEL_NB] = {
 	_CLK_PARENT_SEL(RNG1, RCC_RNG1CKSELR, rng1_parents),
 	_CLK_PARENT_SEL(MPU, RCC_MPCKSELR, mpu_parents),
 	_CLK_PARENT_SEL(PER, RCC_CPERCKSELR, per_parents),
+	_CLK_PARENT_SEL(RTC, RCC_BDCR, rtc_parents),
 	_CLK_PARENT_SEL(UART6, RCC_UART6CKSELR, uart6_parents),
 	_CLK_PARENT_SEL(UART24, RCC_UART24CKSELR, uart234578_parents),
 	_CLK_PARENT_SEL(UART35, RCC_UART35CKSELR, uart234578_parents),
@@ -697,7 +705,8 @@ static int stm32mp1_clk_get_parent(unsigned long id)
 	}
 
 	sel = clk_sel_ref(s);
-	p_sel = (mmio_read_32(rcc_base + sel->offset) & sel->msk) >> sel->src;
+	p_sel = (mmio_read_32(rcc_base + sel->offset) &
+		 (sel->msk << sel->src)) >> sel->src;
 	if (p_sel < sel->nb_parent) {
 		return (int)sel->parent[p_sel];
 	}
@@ -979,18 +988,20 @@ static void __clk_enable(struct stm32mp1_clk_gate const *gate)
 {
 	uintptr_t rcc_base = stm32mp_rcc_base();
 
+	VERBOSE("Enable clock %u\n", gate->index);
+
 	if (gate->set_clr != 0U) {
 		mmio_write_32(rcc_base + gate->offset, BIT(gate->bit));
 	} else {
 		mmio_setbits_32(rcc_base + gate->offset, BIT(gate->bit));
 	}
-
-	VERBOSE("Clock %d has been enabled", gate->index);
 }
 
 static void __clk_disable(struct stm32mp1_clk_gate const *gate)
 {
 	uintptr_t rcc_base = stm32mp_rcc_base();
+
+	VERBOSE("Disable clock %u\n", gate->index);
 
 	if (gate->set_clr != 0U) {
 		mmio_write_32(rcc_base + gate->offset + RCC_MP_ENCLRR_OFFSET,
@@ -998,8 +1009,6 @@ static void __clk_disable(struct stm32mp1_clk_gate const *gate)
 	} else {
 		mmio_clrbits_32(rcc_base + gate->offset, BIT(gate->bit));
 	}
-
-	VERBOSE("Clock %d has been disabled", gate->index);
 }
 
 static bool __clk_is_enabled(struct stm32mp1_clk_gate const *gate)
@@ -1020,12 +1029,41 @@ unsigned int stm32mp1_clk_get_refcount(unsigned long id)
 	return gate_refcounts[i];
 }
 
+/* Oscillators and PLLs are not gated at runtime */
+static bool clock_is_always_on(unsigned long id)
+{
+	switch (id) {
+	case CK_HSE:
+	case CK_CSI:
+	case CK_LSI:
+	case CK_LSE:
+	case CK_HSI:
+	case CK_HSE_DIV2:
+	case PLL1_Q:
+	case PLL1_R:
+	case PLL2_P:
+	case PLL2_Q:
+	case PLL2_R:
+	case PLL3_P:
+	case PLL3_Q:
+	case PLL3_R:
+		return true;
+	default:
+		return false;
+	}
+}
+
 void __stm32mp1_clk_enable(unsigned long id, bool secure)
 {
 	const struct stm32mp1_clk_gate *gate;
-	int i = stm32mp1_clk_get_gated_id(id);
+	int i;
 	unsigned int *refcnt;
 
+	if (clock_is_always_on(id)) {
+		return;
+	}
+
+	i = stm32mp1_clk_get_gated_id(id);
 	if (i < 0) {
 		ERROR("Clock %d can't be enabled\n", (uint32_t)id);
 		panic();
@@ -1046,9 +1084,14 @@ void __stm32mp1_clk_enable(unsigned long id, bool secure)
 void __stm32mp1_clk_disable(unsigned long id, bool secure)
 {
 	const struct stm32mp1_clk_gate *gate;
-	int i = stm32mp1_clk_get_gated_id(id);
+	int i;
 	unsigned int *refcnt;
 
+	if (clock_is_always_on(id)) {
+		return;
+	}
+
+	i = stm32mp1_clk_get_gated_id(id);
 	if (i < 0) {
 		ERROR("Clock %d can't be disabled\n", (uint32_t)id);
 		panic();
@@ -1078,8 +1121,13 @@ void stm32mp_clk_disable(unsigned long id)
 
 bool stm32mp_clk_is_enabled(unsigned long id)
 {
-	int i = stm32mp1_clk_get_gated_id(id);
+	int i;
 
+	if (clock_is_always_on(id)) {
+		return true;
+	}
+
+	i = stm32mp1_clk_get_gated_id(id);
 	if (i < 0) {
 		panic();
 	}
@@ -1961,6 +2009,23 @@ static void stm32mp1_osc_init(void)
 
 static void sync_earlyboot_clocks_state(void)
 {
+	unsigned int idx;
+	const unsigned long secure_enable[] = {
+		AXIDCG,
+		BSEC,
+		DDRC1, DDRC1LP,
+		DDRC2, DDRC2LP,
+		DDRCAPB, DDRPHYCAPB, DDRPHYCAPBLP,
+		DDRPHYC, DDRPHYCLP,
+		TZC1, TZC2,
+		TZPC,
+		STGEN_K,
+	};
+
+	for (idx = 0U; idx < ARRAY_SIZE(secure_enable); idx++) {
+		stm32mp_clk_enable(secure_enable[idx]);
+	}
+
 	if (!stm32mp_is_single_core()) {
 		stm32mp1_clk_enable_secure(RTCAPB);
 	}
