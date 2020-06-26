@@ -121,6 +121,10 @@ else ifeq (${BRANCH_PROTECTION},3)
 	# Extend the signing to include leaf functions
 	BP_OPTION := pac-ret+leaf
 	ENABLE_PAUTH := 1
+else ifeq (${BRANCH_PROTECTION},4)
+	# Turn on branch target identification mechanism
+	BP_OPTION := bti
+	ENABLE_BTI := 1
 else
         $(error Unknown BRANCH_PROTECTION value ${BRANCH_PROTECTION})
 endif
@@ -900,6 +904,7 @@ $(eval $(call assert_boolean,USE_SPINLOCK_CAS))
 $(eval $(call assert_boolean,ENCRYPT_BL31))
 $(eval $(call assert_boolean,ENCRYPT_BL32))
 $(eval $(call assert_boolean,ERRATA_SPECULATIVE_AT))
+$(eval $(call assert_boolean,RAS_TRAP_LOWER_EL_ERR_ACCESS))
 
 $(eval $(call assert_numeric,ARM_ARCH_MAJOR))
 $(eval $(call assert_numeric,ARM_ARCH_MINOR))
@@ -979,6 +984,7 @@ $(eval $(call add_define,BL2_IN_XIP_MEM))
 $(eval $(call add_define,BL2_INV_DCACHE))
 $(eval $(call add_define,USE_SPINLOCK_CAS))
 $(eval $(call add_define,ERRATA_SPECULATIVE_AT))
+$(eval $(call add_define,RAS_TRAP_LOWER_EL_ERR_ACCESS))
 
 ifeq (${SANITIZE_UB},trap)
         $(eval $(call add_define,MONITOR_TRAPS))

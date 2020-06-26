@@ -88,6 +88,7 @@ Common build options
 -  1: Enables all types of branch protection features
 -  2: Return address signing to its standard level
 -  3: Extend the signing to include leaf functions
+-  4: Turn on branch target identification mechanism
 
    The table below summarizes ``BRANCH_PROTECTION`` values, GCC compilation options
    and resulting PAuth/BTI features.
@@ -102,6 +103,8 @@ Common build options
    |   2   |   pac-ret    |   Y   |  N  |
    +-------+--------------+-------+-----+
    |   3   | pac-ret+leaf |   Y   |  N  |
+   +-------+--------------+-------+-----+
+   |   4   |     bti      |   N   |  Y  |
    +-------+--------------+-------+-----+
 
    This option defaults to 0 and this is an experimental feature.
@@ -706,6 +709,10 @@ Common build options
    +---------+--------------+
    | 1530924 |  Cortex-A53  |
    +---------+--------------+
+
+- ``RAS_TRAP_LOWER_EL_ERR_ACCESS``: This flag enables/disables the SCR_EL3.TERR
+  bit, to trap access to the RAS ERR and RAS ERX registers from lower ELs.
+  This flag is disabled by default.
 
 GICv3 driver options
 --------------------
