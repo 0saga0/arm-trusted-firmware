@@ -67,6 +67,9 @@
 #define ARM_BL_RAM_SIZE			(PLAT_ARM_TRUSTED_SRAM_SIZE -   \
 					ARM_SHARED_RAM_SIZE)
 
+#define ARM_NS_SHARED_RAM_BASE		ARM_TRUSTED_SRAM_BASE + UL(0x00100000)
+#define ARM_NS_SHARED_RAM_SIZE		0x00300000
+
 /*
  * SP_MIN is the only BL image in SRAM. Allocate the whole of SRAM (excluding
  * the page reserved for fw_configs) to BL32
@@ -83,11 +86,11 @@
 #define ARM_CACHE_WRITEBACK_SHIFT	6
 
 /*
- * To enable TB_FW_CONFIG to be loaded by BL1, define the corresponding base
+ * To enable FW_CONFIG to be loaded by BL1, define the corresponding base
  * and limit. Leave enough space for BL2 meminfo.
  */
-#define ARM_TB_FW_CONFIG_BASE		(ARM_BL_RAM_BASE + sizeof(meminfo_t))
-#define ARM_TB_FW_CONFIG_LIMIT		(ARM_BL_RAM_BASE + (PAGE_SIZE / 2U))
+#define ARM_FW_CONFIG_BASE		(ARM_BL_RAM_BASE + sizeof(meminfo_t))
+#define ARM_FW_CONFIG_LIMIT		(ARM_BL_RAM_BASE + (PAGE_SIZE / 2U))
 
 /*
  * The max number of regions like RO(code), coherent and data required by
@@ -111,7 +114,13 @@
 #define ARM_SYS_CNTCTL_BASE			UL(0x1a200000)
 #define ARM_SYS_CNTREAD_BASE			UL(0x1a210000)
 #define ARM_SYS_TIMCTL_BASE			UL(0x1a220000)
-#define CORSTONE700_TIMER_BASE_FREQUENCY	UL(24000000)
+
+#ifdef TARGET_PLATFORM_FVP
+#define SYS_COUNTER_FREQ_IN_TICKS	UL(50000000) /* 50MHz */
+#else
+#define SYS_COUNTER_FREQ_IN_TICKS	UL(32000000) /* 32MHz */
+#endif
+
 #define CORSTONE700_IRQ_TZ_WDOG			32
 #define CORSTONE700_IRQ_SEC_SYS_TIMER		34
 
@@ -140,7 +149,7 @@
 #define PLAT_ARM_TRUSTED_MAILBOX_BASE		ARM_TRUSTED_SRAM_BASE
 #define PLAT_ARM_NSTIMER_FRAME_ID		U(1)
 
-#define PLAT_ARM_NS_IMAGE_OFFSET		(ARM_DRAM1_BASE + UL(0x8000000))
+#define PLAT_ARM_NS_IMAGE_BASE			(ARM_NS_SHARED_RAM_BASE)
 
 #define PLAT_PHY_ADDR_SPACE_SIZE		(1ULL << 32)
 #define PLAT_VIRT_ADDR_SPACE_SIZE		(1ULL << 32)
@@ -162,7 +171,12 @@
 #define ARM_MAP_SHARED_RAM			MAP_REGION_FLAT(	\
 						ARM_SHARED_RAM_BASE,	\
 						ARM_SHARED_RAM_SIZE,	\
-						MT_DEVICE | MT_RW | MT_SECURE)
+						MT_MEMORY | MT_RW | MT_SECURE)
+
+#define ARM_MAP_NS_SHARED_RAM			MAP_REGION_FLAT(	\
+						ARM_NS_SHARED_RAM_BASE,	\
+						ARM_NS_SHARED_RAM_SIZE,	\
+						MT_MEMORY | MT_RW | MT_NS)
 
 #define ARM_MAP_NS_DRAM1		MAP_REGION_FLAT(		\
 						ARM_NS_DRAM1_BASE,	\

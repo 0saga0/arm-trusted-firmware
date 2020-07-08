@@ -258,6 +258,10 @@ ERRATA_A76_1791580	?=0
 # only to revision <= r4p0 of the Cortex A76 cpu.
 ERRATA_A76_1800710	?=0
 
+# Flag to apply erratum 1800714 workaround during reset. This erratum applies
+# only to revision <= r1p1 of the Cortex A77 cpu.
+ERRATA_A77_1800714	?=0
+
 # Flag to apply erratum 1688305 workaround during reset. This erratum applies
 # to revisions r0p0 - r1p0 of the A78 cpu.
 ERRATA_A78_1688305	?=0
@@ -309,6 +313,10 @@ ERRATA_N1_1315703	?=0
 # Flag to apply erratum 1542419 workaround during reset. This erratum applies
 # to revisions r3p0 - r4p0 of the Neoverse N1 cpu.
 ERRATA_N1_1542419	?=0
+
+# Flag to apply erratum 1800710 workaround during reset. This erratum applies
+# to revisions <= r4p0 of the Neoverse N1 cpu.
+ERRATA_N1_1800710	?=0
 
 # Flag to apply DSU erratum 798953. This erratum applies to DSUs revision r0p0.
 # Applying the workaround results in higher DSU power consumption on idle.
@@ -503,6 +511,10 @@ $(eval $(call add_define,ERRATA_A76_1791580))
 $(eval $(call assert_boolean,ERRATA_A76_1800710))
 $(eval $(call add_define,ERRATA_A76_1800710))
 
+# Process ERRATA_A77_1800714 flag
+$(eval $(call assert_boolean,ERRATA_A77_1800714))
+$(eval $(call add_define,ERRATA_A77_1800714))
+
 # Process ERRATA_A78_1688305 flag
 $(eval $(call assert_boolean,ERRATA_A78_1688305))
 $(eval $(call add_define,ERRATA_A78_1688305))
@@ -554,6 +566,10 @@ $(eval $(call add_define,ERRATA_N1_1315703))
 # Process ERRATA_N1_1542419 flag
 $(eval $(call assert_boolean,ERRATA_N1_1542419))
 $(eval $(call add_define,ERRATA_N1_1542419))
+
+# Process ERRATA_N1_1800710 flag
+$(eval $(call assert_boolean,ERRATA_N1_1800710))
+$(eval $(call add_define,ERRATA_N1_1800710))
 
 # Process ERRATA_DSU_798953 flag
 $(eval $(call assert_boolean,ERRATA_DSU_798953))

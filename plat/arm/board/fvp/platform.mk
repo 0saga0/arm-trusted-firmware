@@ -217,6 +217,7 @@ BL31_SOURCES		+=	drivers/arm/fvp/fvp_pwrc.c			\
 ifeq ($(filter 1,${BL2_AT_EL3} ${RESET_TO_BL31}),)
 BL31_SOURCES		+=	common/fdt_wrappers.c				\
 				lib/fconf/fconf.c				\
+				lib/fconf/fconf_dyn_cfg_getter.c		\
 				plat/arm/board/fvp/fconf/fconf_hw_config_getter.c
 
 ifeq (${SEC_INT_DESC_IN_FCONF},1)
@@ -236,11 +237,13 @@ ifdef UNIX_MK
 FVP_HW_CONFIG_DTS	:=	fdts/${FVP_DT_PREFIX}.dts
 FDT_SOURCES		+=	$(addprefix plat/arm/board/fvp/fdts/,	\
 					${PLAT}_fw_config.dts		\
+					${PLAT}_tb_fw_config.dts	\
 					${PLAT}_soc_fw_config.dts	\
 					${PLAT}_nt_fw_config.dts	\
 				)
 
-FVP_TB_FW_CONFIG	:=	${BUILD_PLAT}/fdts/${PLAT}_fw_config.dtb
+FVP_FW_CONFIG		:=	${BUILD_PLAT}/fdts/${PLAT}_fw_config.dtb
+FVP_TB_FW_CONFIG	:=	${BUILD_PLAT}/fdts/${PLAT}_tb_fw_config.dtb
 FVP_SOC_FW_CONFIG	:=	${BUILD_PLAT}/fdts/${PLAT}_soc_fw_config.dtb
 FVP_NT_FW_CONFIG	:=	${BUILD_PLAT}/fdts/${PLAT}_nt_fw_config.dtb
 
@@ -260,6 +263,8 @@ FVP_TOS_FW_CONFIG	:=	${BUILD_PLAT}/fdts/${PLAT}_spmc_manifest.dtb
 $(eval $(call TOOL_ADD_PAYLOAD,${FVP_TOS_FW_CONFIG},--tos-fw-config))
 endif
 
+# Add the FW_CONFIG to FIP and specify the same to certtool
+$(eval $(call TOOL_ADD_PAYLOAD,${FVP_FW_CONFIG},--fw-config))
 # Add the TB_FW_CONFIG to FIP and specify the same to certtool
 $(eval $(call TOOL_ADD_PAYLOAD,${FVP_TB_FW_CONFIG},--tb-fw-config))
 # Add the SOC_FW_CONFIG to FIP and specify the same to certtool
