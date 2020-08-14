@@ -119,6 +119,8 @@ Common build options
 -  ``BUILD_STRING``: Input string for VERSION_STRING, which allows the TF-A
    build to be uniquely identified. Defaults to the current git commit id.
 
+-  ``BUILD_BASE``: Output directory for the build. Defaults to ``./build``
+
 -  ``CFLAGS``: Extra user options appended on the compiler's command line in
    addition to the options set by the build system.
 
@@ -346,15 +348,13 @@ Common build options
 -  ``GICV2_G0_FOR_EL3``: Unlike GICv3, the GICv2 architecture doesn't have
    inherent support for specific EL3 type interrupts. Setting this build option
    to ``1`` assumes GICv2 *Group 0* interrupts are expected to target EL3, both
-   by `platform abstraction layer`__ and `Interrupt Management Framework`__.
+   by :ref:`platform abstraction layer<platform Interrupt Controller API>` and
+   :ref:`Interrupt Management Framework<Interrupt Management Framework>`.
    This allows GICv2 platforms to enable features requiring EL3 interrupt type.
    This also means that all GICv2 Group 0 interrupts are delivered to EL3, and
    the Secure Payload interrupts needs to be synchronously handed over to Secure
    EL1 for handling. The default value of this option is ``0``, which means the
    Group 0 interrupts are assumed to be handled by Secure EL1.
-
-   .. __: platform-interrupt-controller-API.rst
-   .. __: interrupt-framework-design.rst
 
 -  ``HANDLE_EA_EL3_FIRST``: When set to ``1``, External Aborts and SError
    Interrupts will be always trapped in EL3 i.e. in BL31 at runtime. When set to
@@ -720,6 +720,10 @@ Common build options
 - ``RAS_TRAP_LOWER_EL_ERR_ACCESS``: This flag enables/disables the SCR_EL3.TERR
   bit, to trap access to the RAS ERR and RAS ERX registers from lower ELs.
   This flag is disabled by default.
+
+- ``OPENSSL_DIR``: This flag is used to provide the installed openssl directory
+  path on the host machine which is used to build certificate generation and
+  firmware encryption tool.
 
 GICv3 driver options
 --------------------

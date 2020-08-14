@@ -451,8 +451,10 @@ include common/backtrace/backtrace.mk
 
 include ${MAKE_HELPERS_DIRECTORY}plat_helpers.mk
 
-BUILD_BASE		:=	./build
-BUILD_PLAT		:=	${BUILD_BASE}/${PLAT}/${BUILD_TYPE}
+ifeq (${BUILD_BASE},)
+     BUILD_BASE		:=	./build
+endif
+BUILD_PLAT		:=	$(abspath ${BUILD_BASE})/${PLAT}/${BUILD_TYPE}
 
 SPDS			:=	$(sort $(filter-out none, $(patsubst services/spd/%,%,$(wildcard services/spd/*))))
 
@@ -483,6 +485,10 @@ ifneq (${SPD},none)
             ifeq ($(CTX_INCLUDE_EL2_REGS),0)
                 $(error SPMD with SPM at S-EL2 requires CTX_INCLUDE_EL2_REGS option)
             endif
+        endif
+
+        ifeq ($(findstring optee_sp,$(ARM_SPMC_MANIFEST_DTS)),optee_sp)
+            DTC_CPPFLAGS	+=	-DOPTEE_SP_FW_CONFIG
         endif
     else
         # All other SPDs in spd directory
@@ -1201,7 +1207,7 @@ certtool: ${CRTTOOL}
 
 .PHONY: ${CRTTOOL}
 ${CRTTOOL}:
-	${Q}${MAKE} PLAT=${PLAT} USE_TBBR_DEFS=${USE_TBBR_DEFS} COT=${COT} --no-print-directory -C ${CRTTOOLPATH}
+	${Q}${MAKE} PLAT=${PLAT} USE_TBBR_DEFS=${USE_TBBR_DEFS} COT=${COT} OPENSSL_DIR=${OPENSSL_DIR} --no-print-directory -C ${CRTTOOLPATH}
 	@${ECHO_BLANK_LINE}
 	@echo "Built $@ successfully"
 	@${ECHO_BLANK_LINE}
@@ -1267,7 +1273,7 @@ enctool: ${ENCTOOL}
 
 .PHONY: ${ENCTOOL}
 ${ENCTOOL}:
-	${Q}${MAKE} PLAT=${PLAT} BUILD_INFO=0 --no-print-directory -C ${ENCTOOLPATH}
+	${Q}${MAKE} PLAT=${PLAT} BUILD_INFO=0 OPENSSL_DIR=${OPENSSL_DIR} --no-print-directory -C ${ENCTOOLPATH}
 	@${ECHO_BLANK_LINE}
 	@echo "Built $@ successfully"
 	@${ECHO_BLANK_LINE}

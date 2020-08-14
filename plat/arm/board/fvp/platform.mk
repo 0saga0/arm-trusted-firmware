@@ -72,13 +72,10 @@ else ifeq (${FVP_USE_GIC_DRIVER}, FVP_GICV2)
 GIC_ENABLE_V4_EXTN	:=	0
 $(eval $(call add_define,GIC_ENABLE_V4_EXTN))
 
-# No support for extended PPI and SPI range
-GIC_EXT_INTID		:=	0
-$(eval $(call add_define,GIC_EXT_INTID))
+# Include GICv2 driver files
+include drivers/arm/gic/v2/gicv2.mk
 
-FVP_GIC_SOURCES		:=	drivers/arm/gic/common/gic_common.c	\
-				drivers/arm/gic/v2/gicv2_main.c		\
-				drivers/arm/gic/v2/gicv2_helpers.c	\
+FVP_GIC_SOURCES		:=	${GICV2_SOURCES}			\
 				plat/common/plat_gicv2.c		\
 				plat/arm/common/arm_gicv2.c
 
@@ -256,8 +253,13 @@ $(eval $(call TOOL_ADD_PAYLOAD,${FVP_TOS_FW_CONFIG},--tos-fw-config))
 endif
 
 ifeq (${SPD},spmd)
-FDT_SOURCES		+=	plat/arm/board/fvp/fdts/${PLAT}_spmc_manifest.dts
-FVP_TOS_FW_CONFIG	:=	${BUILD_PLAT}/fdts/${PLAT}_spmc_manifest.dtb
+
+ifeq ($(ARM_SPMC_MANIFEST_DTS),)
+ARM_SPMC_MANIFEST_DTS	:=	plat/arm/board/fvp/fdts/${PLAT}_spmc_manifest.dts
+endif
+
+FDT_SOURCES		+=	${ARM_SPMC_MANIFEST_DTS}
+FVP_TOS_FW_CONFIG	:=	${BUILD_PLAT}/fdts/$(notdir $(basename ${ARM_SPMC_MANIFEST_DTS})).dtb
 
 # Add the TOS_FW_CONFIG to FIP and specify the same to certtool
 $(eval $(call TOOL_ADD_PAYLOAD,${FVP_TOS_FW_CONFIG},--tos-fw-config))
@@ -357,6 +359,11 @@ include plat/arm/common/arm_common.mk
 ifeq (${TRUSTED_BOARD_BOOT}, 1)
 BL1_SOURCES		+=	plat/arm/board/fvp/fvp_trusted_boot.c
 BL2_SOURCES		+=	plat/arm/board/fvp/fvp_trusted_boot.c
+
+ifeq (${MEASURED_BOOT},1)
+BL2_SOURCES		+=	plat/arm/board/fvp/fvp_measured_boot.c
+endif
+
 # FVP being a development platform, enable capability to disable Authentication
 # dynamically if TRUSTED_BOARD_BOOT is set.
 DYN_DISABLE_AUTH	:=	1

@@ -21,7 +21,7 @@ Maintainers
 :G: `soby-mathew`_
 :M: Sandrine Bailleux <sandrine.bailleux@arm.com>
 :G: `sandrine-bailleux-arm`_
-:M: Alexei Fedorov <alexei.fedorov@arm.com>
+:M: Alexei Fedorov <Alexei.Fedorov@arm.com>
 :G: `AlexeiFedorov`_
 :M: Manish Pandey <manish.pandey2@arm.com>
 :G: `manish-pandey-arm`_
@@ -59,6 +59,14 @@ Armv7-A architecture port
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 :M: Etienne Carriere <etienne.carriere@linaro.org>
 :G: `etienne-lms`_
+
+Build Definitions for CMake Build System
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:M: Javier Almansa Sobrino <Javier.AlmansaSobrino@arm.com>
+:G: `javieralso-arm`_
+:M: Jack Bond-Preston <Jack.Bond-Preston@arm.com>
+:G: `jackbondpreston-arm`_
+:F: /
 
 Software Delegated Exception Interface (SDEI)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -185,7 +193,7 @@ Reliability Availability Serviceabilty (RAS) framework
 
 Activity Monitors Unit (AMU) extensions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-:M: Alexei Fedorov <alexei.fedorov@arm.com>
+:M: Alexei Fedorov <Alexei.Fedorov@arm.com>
 :G: `AlexeiFedorov`_
 :F: lib/extensions/amu/
 
@@ -199,7 +207,7 @@ Memory Partitioning And Monitoring (MPAM) extensions
 
 Pointer Authentication (PAuth) and Branch Target Identification (BTI) extensions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-:M: Alexei Fedorov <alexei.fedorov@arm.com>
+:M: Alexei Fedorov <Alexei.Fedorov@arm.com>
 :G: `AlexeiFedorov`_
 :M: Zelalem Aweke <Zelalem.Aweke@arm.com>
 :G: `zelalem-aweke`_
@@ -221,7 +229,7 @@ Scalable Vector Extension (SVE)
 
 Standard C library
 ^^^^^^^^^^^^^^^^^^
-:M: Alexei Fedorov <alexei.fedorov@arm.com>
+:M: Alexei Fedorov <Alexei.Fedorov@arm.com>
 :G: `AlexeiFedorov`_
 :M: John Powell <John.Powell@arm.com>
 :G: `john-powell-arm`_
@@ -251,7 +259,7 @@ IO abstraction layer
 
 GIC driver
 ^^^^^^^^^^
-:M: Alexei Fedorov <alexei.fedorov@arm.com>
+:M: Alexei Fedorov <Alexei.Fedorov@arm.com>
 :G: `AlexeiFedorov`_
 :M: Manish Pandey <manish.pandey2@arm.com>
 :G: `manish-pandey-arm`_
@@ -277,6 +285,15 @@ Firmware Encryption Framework
 :F: include/drivers/io/io_encrypted.h
 :F: include/tools_share/firmware_encrypted.h
 
+Measured Boot
+^^^^^^^^^^^^^
+:M: Alexei Fedorov <Alexei.Fedorov@arm.com>
+:G: `AlexeiFedorov`_
+:M: Javier Almansa Sobrino <Javier.AlmansaSobrino@arm.com>
+:G: `javieralso-arm`_
+:F: drivers/measured_boot
+:F: include/drivers/measured_boot
+:F: plat/arm/board/fvp/fvp_measured_boot.c
 
 Platform Ports
 ~~~~~~~~~~~~~~
@@ -428,6 +445,15 @@ QEMU platform port
 :G: `jenswi-linaro`_
 :F: docs/plat/qemu.rst
 :F: plat/qemu/
+
+QTI platform port
+^^^^^^^^^^^^^^^^^
+:M: Saurabh Gorecha <sgorecha@codeaurora.org>
+:G: `sgorecha`_
+:M: Debasish Mandal <dmandal@codeaurora.org>
+:M: QTI TF Maintainers <qti.trustedfirmware.maintainers@codeaurora.org>
+:F: docs/plat/qti.rst
+:F: plat/qti/
 
 Raspberry Pi 3 platform port
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -597,6 +623,7 @@ Build system
 .. _remi-triplefault: https://github.com/repk
 .. _rockchip-linux: https://github.com/rockchip-linux
 .. _sandrine-bailleux-arm: https://github.com/sandrine-bailleux-arm
+.. _sgorecha: https://github.com/sgorecha
 .. _shawnguo2: https://github.com/shawnguo2
 .. _sivadur: https://github.com/sivadur
 .. _smaeul: https://github.com/smaeul
@@ -621,6 +648,6 @@ Build system
 .. _madhukar-Arm: https://github.com/madhukar-Arm
 .. _john-powell-arm: https://github.com/john-powell-arm
 .. _raghuncstate: https://github.com/raghuncstate
-
+.. _jackbondpreston-arm: https://github.com/jackbondpreston-arm
 
 .. _Project Maintenance Process: https://developer.trustedfirmware.org/w/collaboration/project-maintenance-process/

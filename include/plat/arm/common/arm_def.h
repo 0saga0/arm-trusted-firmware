@@ -81,7 +81,7 @@
 					 ARM_SCP_TZC_DRAM1_SIZE)
 #define ARM_SCP_TZC_DRAM1_SIZE		PLAT_ARM_SCP_TZC_DRAM1_SIZE
 #define ARM_SCP_TZC_DRAM1_END		(ARM_SCP_TZC_DRAM1_BASE +	\
-					 ARM_SCP_TZC_DRAM1_SIZE - 1)
+					 ARM_SCP_TZC_DRAM1_SIZE - 1U)
 
 /*
  * Define a 2MB region within the TZC secured DRAM for use by EL3 runtime
@@ -92,7 +92,7 @@
 #define ARM_EL3_TZC_DRAM1_BASE		(ARM_SCP_TZC_DRAM1_BASE - ARM_EL3_TZC_DRAM1_SIZE)
 #define ARM_EL3_TZC_DRAM1_SIZE		UL(0x00200000) /* 2 MB */
 #define ARM_EL3_TZC_DRAM1_END		(ARM_EL3_TZC_DRAM1_BASE +	\
-					ARM_EL3_TZC_DRAM1_SIZE - 1)
+					ARM_EL3_TZC_DRAM1_SIZE - 1U)
 
 #define ARM_AP_TZC_DRAM1_BASE		(ARM_DRAM1_BASE +		\
 					 ARM_DRAM1_SIZE -		\
@@ -101,7 +101,7 @@
 					 (ARM_SCP_TZC_DRAM1_SIZE +	\
 					 ARM_EL3_TZC_DRAM1_SIZE))
 #define ARM_AP_TZC_DRAM1_END		(ARM_AP_TZC_DRAM1_BASE +	\
-					 ARM_AP_TZC_DRAM1_SIZE - 1)
+					 ARM_AP_TZC_DRAM1_SIZE - 1U)
 
 /* Define the Access permissions for Secure peripherals to NS_DRAM */
 #if ARM_CRYPTOCELL_INTEG
@@ -148,17 +148,17 @@
 #define ARM_NS_DRAM1_SIZE		(ARM_DRAM1_SIZE -		\
 					 ARM_TZC_DRAM1_SIZE)
 #define ARM_NS_DRAM1_END		(ARM_NS_DRAM1_BASE +		\
-					 ARM_NS_DRAM1_SIZE - 1)
+					 ARM_NS_DRAM1_SIZE - 1U)
 
 #define ARM_DRAM1_BASE			ULL(0x80000000)
 #define ARM_DRAM1_SIZE			ULL(0x80000000)
 #define ARM_DRAM1_END			(ARM_DRAM1_BASE +		\
-					 ARM_DRAM1_SIZE - 1)
+					 ARM_DRAM1_SIZE - 1U)
 
 #define ARM_DRAM2_BASE			PLAT_ARM_DRAM2_BASE
 #define ARM_DRAM2_SIZE			PLAT_ARM_DRAM2_SIZE
 #define ARM_DRAM2_END			(ARM_DRAM2_BASE +		\
-					 ARM_DRAM2_SIZE - 1)
+					 ARM_DRAM2_SIZE - 1U)
 
 #define ARM_IRQ_SEC_PHY_TIMER		29
 
@@ -294,12 +294,19 @@
 #define ARM_V2M_MAP_MEM_PROTECT		MAP_REGION_FLAT(PLAT_ARM_MEM_PROT_ADDR,	\
 						V2M_FLASH_BLOCK_SIZE,		\
 						MT_DEVICE | MT_RW | MT_SECURE)
+/*
+ * Map the region for device tree configuration with read and write permissions
+ */
+#define ARM_MAP_BL_CONFIG_REGION	MAP_REGION_FLAT(ARM_BL_RAM_BASE,	\
+						(ARM_FW_CONFIGS_LIMIT		\
+							- ARM_BL_RAM_BASE),	\
+						MT_MEMORY | MT_RW | MT_SECURE)
 
 /*
  * The max number of regions like RO(code), coherent and data required by
  * different BL stages which need to be mapped in the MMU.
  */
-#define ARM_BL_REGIONS			5
+#define ARM_BL_REGIONS			6
 
 #define MAX_MMAP_REGIONS		(PLAT_ARM_MMAP_ENTRIES +	\
 					 ARM_BL_REGIONS)

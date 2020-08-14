@@ -562,21 +562,14 @@ behaviour of the ``assert()`` function (for example, to save memory).
    doesn't print anything to the console. If ``PLAT_LOG_LEVEL_ASSERT`` isn't
    defined, it defaults to ``LOG_LEVEL``.
 
-If the platform port uses the Activity Monitor Unit, the following constants
+If the platform port uses the Activity Monitor Unit, the following constant
 may be defined:
 
 -  **PLAT_AMU_GROUP1_COUNTERS_MASK**
    This mask reflects the set of group counters that should be enabled.  The
    maximum number of group 1 counters supported by AMUv1 is 16 so the mask
    can be at most 0xffff. If the platform does not define this mask, no group 1
-   counters are enabled. If the platform defines this mask, the following
-   constant needs to also be defined.
-
--  **PLAT_AMU_GROUP1_NR_COUNTERS**
-   This value is used to allocate an array to save and restore the counters
-   specified by ``PLAT_AMU_GROUP1_COUNTERS_MASK`` on CPU suspend.
-   This value should be equal to the highest bit position set in the
-   mask, plus 1.  The maximum number of group 1 counters in AMUv1 is 16.
+   counters are enabled.
 
 File : plat_macros.S [mandatory]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1130,6 +1123,7 @@ This function returns soc version which mainly consist of below fields
 
     soc_version[30:24] = JEP-106 continuation code for the SiP
     soc_version[23:16] = JEP-106 identification code with parity bit for the SiP
+    soc_version[15:0]  = Implementation defined SoC ID
 
 Function : plat_get_soc_revision()
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1144,6 +1138,18 @@ This function returns soc revision in below format
 ::
 
     soc_revision[0:30] = SOC revision of specific SOC
+
+Function : plat_is_smccc_feature_available()
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    Argument : u_register_t
+    Return   : int32_t
+
+This function returns SMC_ARCH_CALL_SUCCESS if the platform supports
+the SMCCC function specified in the argument; otherwise returns
+SMC_ARCH_CALL_NOT_SUPPORTED.
 
 Modifications specific to a Boot Loader stage
 ---------------------------------------------
@@ -2469,9 +2475,7 @@ FVP can be configured to use either GICv2 or GICv3 depending on the build flag
 ``FVP_USE_GIC_DRIVER`` (See :ref:`build_options_arm_fvp_platform` for more
 details).
 
-See also: `Interrupt Controller Abstraction APIs`__.
-
-.. __: ../design/platform-interrupt-controller-API.rst
+See also: :ref:`Interrupt Controller Abstraction APIs<Platform Interrupt Controller API>`.
 
 Function : plat_interrupt_type_to_line() [mandatory]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2596,9 +2600,7 @@ This API is used by the CPU to indicate to the platform IC that processing of
 the highest pending interrupt has begun. It should return the raw, unmodified
 value obtained from the interrupt controller when acknowledging an interrupt.
 The actual interrupt number shall be extracted from this raw value using the API
-`plat_ic_get_interrupt_id()`__.
-
-.. __: ../design/platform-interrupt-controller-API.rst#function-unsigned-int-plat-ic-get-interrupt-id-unsigned-int-raw-optional
+`plat_ic_get_interrupt_id()<plat_ic_get_interrupt_id>`.
 
 This function in Arm standard platforms using GICv2, reads the *Interrupt
 Acknowledge Register* (``GICC_IAR``). This changes the state of the highest

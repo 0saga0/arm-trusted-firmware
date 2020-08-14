@@ -37,12 +37,16 @@ Arm FVPs without shifted affinities, and that do not support threaded CPU cores
 -  ``FVP_Base_Cortex-A76AEx4``
 -  ``FVP_Base_Cortex-A76AEx8``
 -  ``FVP_Base_Cortex-A77x4``
+-  ``FVP_Base_Neoverse-E1x1``
+-  ``FVP_Base_Neoverse-E1x2``
+-  ``FVP_Base_Neoverse-E1x4``
 -  ``FVP_Base_Neoverse-N1x4``
 -  ``FVP_Base_Zeusx4``
--  ``FVP_CSS_SGI-575`` (Version 11.10 build 25)
+-  ``FVP_CSS_SGI-575``     (Version 11.10 build 36)
 -  ``FVP_CSS_SGM-775``
--  ``FVP_RD_E1Edge``
--  ``FVP_RD_N1Edge`` (Version 11.10 build 25)
+-  ``FVP_RD_E1_edge``      (Version 11.10 build 36)
+-  ``FVP_RD_N1_edge``      (Version 11.10 build 36)
+-  ``FVP_RD_N1_edge_dual`` (Version 11.10 build 36)
 -  ``Foundation_Platform``
 
 The latest version of the AArch32 build of TF-A has been tested on the
@@ -631,7 +635,7 @@ boot Linux with 4 CPUs using the AArch32 build of TF-A.
 
 *Copyright (c) 2019-2020, Arm Limited. All rights reserved.*
 
-.. _TB_FW_CONFIG for FVP: ../plat/arm/board/fvp/fdts/fvp_tb_fw_config.dts
+.. _TB_FW_CONFIG for FVP: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/tree/plat/arm/board/fvp/fdts/fvp_tb_fw_config.dts
 .. _Arm's website: `FVP models`_
 .. _FVP models: https://developer.arm.com/products/system-design/fixed-virtual-platforms
 .. _Linaro Release 19.06: http://releases.linaro.org/members/arm/platforms/19.06
