@@ -6,15 +6,20 @@ Getting Started
 
 -  Make sure you have a Github account and you are logged on both
    `developer.trustedfirmware.org`_ and `review.trustedfirmware.org`_.
--  Create an `issue`_ for your work if one does not already exist. This gives
-   everyone visibility of whether others are working on something similar.
 
-   -  If you intend to include Third Party IP in your contribution, please
-      raise a separate `issue`_ for this and ensure that the changes that
-      include Third Party IP are made on a separate topic branch.
+-  If you plan to contribute a major piece of work, it is usually a good idea to
+   start a discussion around it on the mailing list. This gives everyone
+   visibility of what is coming up, you might learn that somebody else is
+   already working on something similar or the community might be able to
+   provide some early input to help shaping the design of the feature.
+
+   If you intend to include Third Party IP in your contribution, please mention
+   it explicitly in the email thread and ensure that the changes that include
+   Third Party IP are made in a separate patch (or patch series).
 
 -  Clone `Trusted Firmware-A`_ on your own machine as described in
    :ref:`prerequisites_get_source`.
+
 -  Create a local topic branch based on the `Trusted Firmware-A`_ ``master``
    branch.
 
@@ -23,44 +28,51 @@ Making Changes
 
 -  Make commits of logical units. See these general `Git guidelines`_ for
    contributing to a project.
+
 -  Follow the :ref:`Coding Style` and :ref:`Coding Guidelines`.
 
    -  Use the checkpatch.pl script provided with the Linux source tree. A
       Makefile target is provided for convenience.
 
 -  Keep the commits on topic. If you need to fix another bug or make another
-   enhancement, please create a separate `issue`_ and address it on a separate
-   topic branch.
+   enhancement, please address it on a separate topic branch.
+
 -  Avoid long commit series. If you do have a long series, consider whether
    some commits should be squashed together or addressed in a separate topic.
+
 -  Make sure your commit messages are in the proper format. If a commit fixes
    an `issue`_, include a reference.
+
 -  Where appropriate, please update the documentation.
 
-   -  Consider whether the :ref:`Porting Guide`,
-      :ref:`Firmware Design` document or other in-source documentation needs
-      updating.
-   -  Ensure that each changed file has the correct copyright and license
-      information. Files that entirely consist of contributions to this
-      project should have a copyright notice and BSD-3-Clause SPDX license
-      identifier of the form as shown in :ref:`license`. Files that contain
-      changes to imported Third Party IP files should retain their original
-      copyright and license notices. For significant contributions you may
-      add your own copyright notice in following format:
+   -  Consider whether the :ref:`Porting Guide`, :ref:`Firmware Design` document
+      or other in-source documentation needs updating.
 
-      ::
-
-          Portions copyright (c) [XXXX-]YYYY, <OWNER>. All rights reserved.
-
-      where XXXX is the year of first contribution (if different to YYYY) and
-      YYYY is the year of most recent contribution. <OWNER> is your name or
-      your company name.
    -  If you are submitting new files that you intend to be the code owner for
       (for example, a new platform port), then also update the
       :ref:`code owners` file.
-   -  For topics with multiple commits, you should make all documentation
-      changes (and nothing else) in the last commit of the series. Otherwise,
-      include the documentation changes within the single commit.
+
+   -  For topics with multiple commits, you should make all documentation changes
+      (and nothing else) in the last commit of the series. Otherwise, include
+      the documentation changes within the single commit.
+
+-  Ensure that each changed file has the correct copyright and license
+   information. Files that entirely consist of contributions to this project
+   should have a copyright notice and BSD-3-Clause SPDX license identifier of
+   the form as shown in :ref:`license`. Files that contain changes to imported
+   Third Party IP files should retain their original copyright and license
+   notices.
+
+   For significant contributions you may add your own copyright notice in the
+   following format:
+
+   ::
+
+       Portions copyright (c) [XXXX-]YYYY, <OWNER>. All rights reserved.
+
+   where XXXX is the year of first contribution (if different to YYYY) and YYYY
+   is the year of most recent contribution. <OWNER> is your name or your company
+   name.
 
 -  Please test your changes. As a minimum, ensure that Linux boots on the
    Foundation FVP. See :ref:`Arm Fixed Virtual Platforms (FVP)` for more
