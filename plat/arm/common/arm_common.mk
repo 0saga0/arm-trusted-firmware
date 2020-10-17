@@ -121,6 +121,12 @@ endif
 ENABLE_PSCI_STAT		:=	1
 ENABLE_PMF			:=	1
 
+# Override the standard libc with optimised libc_asm
+OVERRIDE_LIBC			:=	1
+ifeq (${OVERRIDE_LIBC},1)
+    include lib/libc/libc_asm.mk
+endif
+
 # On ARM platforms, separate the code and read-only data sections to allow
 # mapping the former as executable and the latter as execute-never.
 SEPARATE_CODE_AND_RODATA	:=	1
@@ -258,7 +264,7 @@ endif
 endif
 
 ifeq (${EL3_EXCEPTION_HANDLING},1)
-BL31_SOURCES		+=	plat/arm/common/aarch64/arm_ehf.c
+BL31_SOURCES		+=	plat/common/aarch64/plat_ehf.c
 endif
 
 ifeq (${SDEI_SUPPORT},1)

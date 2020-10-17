@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, ARM Limited and Contributors. All rights reserved.
+# Copyright (c) 2020, Arm Limited. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -40,6 +40,8 @@ HW_ASSISTED_COHERENCY	:=	1
 
 PL011_GENERIC_UART	:=	1
 
+SUPPORT_UNKNOWN_MPID	?=	1
+
 FPGA_CPU_LIBS	:=	lib/cpus/${ARCH}/aem_generic.S
 
 # select a different set of CPU files, depending on whether we compile for
@@ -59,8 +61,8 @@ else
 				lib/cpus/aarch64/cortex_a78.S		\
 				lib/cpus/aarch64/neoverse_n1.S		\
 				lib/cpus/aarch64/neoverse_e1.S		\
-				lib/cpus/aarch64/neoverse_zeus.S	\
-				lib/cpus/aarch64/cortex_hercules_ae.S	\
+				lib/cpus/aarch64/neoverse_v1.S		\
+				lib/cpus/aarch64/cortex_a78_ae.S	\
 				lib/cpus/aarch64/cortex_a65.S		\
 				lib/cpus/aarch64/cortex_a65ae.S		\
 				lib/cpus/aarch64/cortex_klein.S		\
@@ -69,6 +71,12 @@ else
 # AArch64/AArch32 cores
 	FPGA_CPU_LIBS	+=	lib/cpus/aarch64/cortex_a55.S	\
 				lib/cpus/aarch64/cortex_a75.S
+endif
+
+ifeq (${SUPPORT_UNKNOWN_MPID}, 1)
+# Add support for unknown/invalid MPIDs (aarch64 only)
+$(eval $(call add_define,SUPPORT_UNKNOWN_MPID))
+	FPGA_CPU_LIBS	+=	lib/cpus/aarch64/generic.S
 endif
 
 # Allow detection of GIC-600
@@ -80,6 +88,8 @@ include drivers/arm/gic/v3/gicv3.mk
 FPGA_GIC_SOURCES	:=	${GICV3_SOURCES}			\
 				plat/common/plat_gicv3.c		\
 				plat/arm/board/arm_fpga/fpga_gicv3.c
+
+FDT_SOURCES		:=	fdts/arm_fpga.dts
 
 PLAT_INCLUDES		:=	-Iplat/arm/board/arm_fpga/include
 
@@ -98,4 +108,11 @@ BL31_SOURCES		+=	common/fdt_wrappers.c				\
 				${FPGA_CPU_LIBS}				\
 				${FPGA_GIC_SOURCES}
 
-all: bl31
+$(eval $(call MAKE_S,$(BUILD_PLAT),plat/arm/board/arm_fpga/rom_trampoline.S,31))
+$(eval $(call MAKE_LD,$(BUILD_PLAT)/build_axf.ld,plat/arm/board/arm_fpga/build_axf.ld.S,31))
+
+bl31.axf: bl31 dtbs ${BUILD_PLAT}/rom_trampoline.o ${BUILD_PLAT}/build_axf.ld
+	$(ECHO) "  LD      $@"
+	$(Q)$(LD) -T ${BUILD_PLAT}/build_axf.ld -L ${BUILD_PLAT} --strip-debug -o ${BUILD_PLAT}/bl31.axf
+
+all: bl31.axf
