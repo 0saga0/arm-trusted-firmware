@@ -116,7 +116,7 @@ likely to be suitable for all platform ports.
    by ``plat/common/aarch64/platform_mp_stack.S`` and
    ``plat/common/aarch64/platform_up_stack.S``.
 
--  **define : CACHE_WRITEBACK_GRANULE**
+-  **#define : CACHE_WRITEBACK_GRANULE**
 
    Defines the size in bits of the largest cache line across all the cache
    levels in the platform.
@@ -2724,12 +2724,11 @@ Function : plat_crash_console_flush [mandatory]
 ::
 
     Argument : void
-    Return   : int
+    Return   : void
 
 This API is used by the crash reporting mechanism to force write of all buffered
 data on the designated crash console. It should only use general purpose
-registers x0 through x5 to do its work. The return value is 0 on successful
-completion; otherwise the return value is -1.
+registers x0 through x5 to do its work.
 
 .. _External Abort handling and RAS Support:
 

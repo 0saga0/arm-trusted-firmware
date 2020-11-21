@@ -8,7 +8,7 @@
 # Trusted Firmware Version
 #
 VERSION_MAJOR			:= 2
-VERSION_MINOR			:= 3
+VERSION_MINOR			:= 4
 
 # Default goal is build all images
 .DEFAULT_GOAL			:= all
@@ -865,6 +865,7 @@ $(eval $(call assert_booleans,\
         CTX_INCLUDE_PAUTH_REGS \
         CTX_INCLUDE_MTE_REGS \
         CTX_INCLUDE_EL2_REGS \
+        CTX_INCLUDE_NEVE_REGS \
         DEBUG \
         DYN_DISABLE_AUTH \
         EL3_EXCEPTION_HANDLING \
@@ -953,6 +954,7 @@ $(eval $(call add_defines,\
         EL3_EXCEPTION_HANDLING \
         CTX_INCLUDE_MTE_REGS \
         CTX_INCLUDE_EL2_REGS \
+        CTX_INCLUDE_NEVE_REGS \
         DECRYPTION_SUPPORT_${DECRYPTION_SUPPORT} \
         ENABLE_AMU \
         ENABLE_ASSERTIONS \
@@ -1066,14 +1068,6 @@ ifneq ($(findstring clang,$(notdir $(CC))),)
     CPPFLAGS		+= 	-Wno-error=deprecated-declarations
 else
     CPPFLAGS		+= 	-Wno-error=deprecated-declarations -Wno-error=cpp
-endif
-# __ASSEMBLY__ is deprecated in favor of the compiler-builtin __ASSEMBLER__.
-ASFLAGS	+= -D__ASSEMBLY__
-# AARCH32/AARCH64 macros are deprecated in favor of the compiler-builtin __aarch64__.
-ifeq (${ARCH},aarch32)
-        $(eval $(call add_define,AARCH32))
-else
-        $(eval $(call add_define,AARCH64))
 endif
 endif # !ERROR_DEPRECATED
 
